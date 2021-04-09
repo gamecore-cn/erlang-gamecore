@@ -1,2 +1,2 @@
-# erlang-pmc
-PMC Erlang Game Development  Framework
+# erlang-gamecore
+GameCore Erlang Game Development  Framework
