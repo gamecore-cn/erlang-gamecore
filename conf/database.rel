@@ -1,0 +1,20 @@
+{database, [
+    % 游戏服数据库配置
+    {game, [
+        {host, "127.0.0.1"},                            % host
+        {port, 3306},                                   % port
+        {database, "mingri_local_110244"},              % database
+        {user, "root"},                                 % user
+        {password, "f927e3fe01d329a4"},                 % password
+        {size, 30}                                      % 进程池个数
+    ]}
+    % 管理后台数据库配置
+    , {admin, [
+        {host, "127.0.0.1"},                            % host
+        {port, 3306},                                   % port
+        {database, "admin_mingri_local_110244"},        % database
+        {user, "root"},                                 % user
+        {password, "f927e3fe01d329a4"},                 % password
+        {size, 30}                                      % 进程池个数
+    ]}
+]}.
