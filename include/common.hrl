@@ -1,74 +1,43 @@
--ifndef(INC_COMMON_HRL).
--define(INC_COMMON_HRL, true).
+%%%-------------------------------------------------------------------
+%%% @author xiayiping@qq.com
+%%% @copyright (C) 2021, Gamecore.cn MVC
+%%% @doc
+%%%
+%%% @end
+%%% Created : 09. 11月 2021 16:56
+%%%-------------------------------------------------------------------
+-author("xiayiping").
+-ifndef(__common__hrl).
+-define(__common__hrl, true).
+-include("log.hrl").
+-include("game_errorcode.hrl").
 
-%% gen_server默认timeout
--define(GEN_SERVER_TIMEOUT, 5000).
+%%% define 常用常量
+%%% -------------------------------------------------------------------
+%% 时间相关
+-define(SECOND_WEEK, 604800).% 7 * 86400).		% 每周有多少秒
+-define(SECOND_DAY, 86400).                     % 每天有多少秒
+-define(SECOND_HOUR, 3600).                     % 每小时有多少秒
+-define(SECOND_MINUTES, 60).                    % 每分钟有多少秒
 
+-define(SECOND_WEEK(N), trunc(?SECOND_WEEK * (N))).
+-define(SECOND_DAY(N), trunc(?SECOND_DAY * (N))).
+-define(SECOND_HOUR(N), trunc(?SECOND_HOUR * (N))).
+-define(SECOND_MINUTES(N), trunc(?SECOND_MINUTES * (N))).
 
-%% 进程之间调用
--define(EXEC_CAST, exec_cast).  % exec_cast
--define(EXEC_CALL, exec_call).  % exec_call
--define(EXEC_CAST(Pid, Fun, Arg), gen_server:cast(Pid, {?EXEC_CAST, ?MODULE, Fun, Arg})).                      % Arg 数据，请尽量的小       Fun返回：?ok | {?ok, NewState}
--define(EXEC_CALL(Pid, Fun, Arg), gen_server:call(Pid, {?EXEC_CALL, ?MODULE, Fun, Arg}, ?GEN_SERVER_TIMEOUT)). % Arg、返回 数据，请尽量的小  Fun返回：?ok | {?ok, Reply, NewState}
--define(EXEC_DO(State, M, F, A),
-    case M:F(State, A) of
-        ?ok -> {?noreply, State};
-        {?ok, NewState} -> {?noreply, NewState};
-        {?noreply, NewState} -> {?noreply, NewState};
-        {?ok, Reply, NewState} -> {?reply, Reply, NewState};
-        {?reply, Reply, NewState} -> {?reply, Reply, NewState};
-        {?stop, Reason, NewState} -> {?stop, Reason, NewState};
-        {?stop, Reason, Reply, NewState} -> {?stop, Reason, Reply, NewState};
-        TryError -> ?ERROR("EXEC_DO MFA:~w TryError:~p State:~w", [{M, F, A},TryError,State]), {?noreply, State}
-    end).
+-define(SECOND_WEEK_MS, 604800000).
+-define(SECOND_DAY_MS, 86400000).
+-define(SECOND_HOUR_MS, 3600000).
+-define(SECOND_MINUTES_MS, 60000).
+-define(SECOND_MS, 1000).
 
-%% 事件监听的信号
--record(signal, {
-    id           % 信号id,同协议号的区间并要求在对应模块*.hrl里用常量定好  类型:unit32()
-    , target_id  % 目标模块id，同模块协议区间 在common.hrl常量定义好  类型:unit32()
-    , data       % 数据，请尽量的小，不要转#role{}等大块数。大的数据可以通过读ets来实现
-}).
+-define(SECOND_WEEK_MS(N), trunc(?SECOND_WEEK_MS * (N))).
+-define(SECOND_DAY_MS(N), trunc(?SECOND_DAY_MS * (N))).
+-define(SECOND_HOUR_MS(N), trunc(?SECOND_HOUR_MS * (N))).
+-define(SECOND_MINUTES_MS(N), trunc(?SECOND_MINUTES_MS * (N))).
+-define(SECOND_MS(N), trunc(?SECOND_MS * (N))).
 
-%%% -------------------------------------------------------------------------------------------
-%% 常用常量
-%%% -------------------------------------------------------------------------------------------
--define(THREE_YEAR_SECOND, 31536000).               % 按照365天计算的三年秒数
-
--define(ONE_WEEK_SECOND, 604800).% 7 * 86400).		% 每周有多少秒
--define(ONE_DAY_SECOND, 86400).                     % 每天有多少秒
--define(ONE_HOUR_SECOND, 3600).                     % 每小时有多少秒
--define(ONE_MIN_SECOND, 60).                        % 每分钟有多少秒
-
--define(WEEK_S, ?ONE_WEEK_SECOND).       % 每周有多少秒 h5
--define(DAY_S, ?ONE_DAY_SECOND).         % 每天有多少秒 h5
--define(HOUR_S, ?ONE_HOUR_SECOND).       % 每小时有多少秒 h5
--define(MINU_S, ?ONE_MIN_SECOND).        % 每分钟有多少秒 h5
-
--define(WEEK_S(N), trunc(?WEEK_S * (N))).
--define(DAY_S(N), trunc(?DAY_S * (N))).
--define(HOUR_S(N), trunc(?HOUR_S * (N))).
--define(MINU_S(N), trunc(?MINU_S * (N))).
-
--define(WEEK_MS, 604800000).
--define(DAY_MS, 86400000).
--define(HOUR_MS, 3600000).
--define(MINU_MS, 60000).
--define(SEC_MS, 1000).
-
--define(WEEK_MS(N), trunc(?WEEK_MS * (N))).
--define(DAY_MS(N), trunc(?DAY_MS * (N))).
--define(HOUR_MS(N), trunc(?HOUR_MS * (N))).
--define(MINU_MS(N), trunc(?MINU_MS * (N))).
--define(SEC_MS(N), trunc(?SEC_MS * (N))).
-
--define(DATA_VALUE, 1).     % 值
--define(DATA_PERCENT, 2).   % 百分比
-
--define(MS_TO_SEC(N), (N div 1000)).
-
--define(UINT_32_MAX, 16#FFFFFFFF).                  % 无符号int32最大值
--define(INT_32_MAX, 16#7FFFFFFF).                   % 有符号int32最大值
--define(CALL_DEFAULT_TIMEOUT, 5000).                % call的默认超时时间
+-define(SECOND_YEAR_THREE, 31536000).           % 按照365天计算的三年秒数
 
 -define(TIME_TYPE_WEEK, 4).   % 周
 -define(TIME_TYPE_DAY, 3).    % 天
@@ -76,15 +45,21 @@
 -define(TIME_TYPE_MINU, 1).   % 分
 -define(TIME_TYPE_SECS, 0).   % 秒
 
--define(BOOL_TRUE, 1).                              % 1表示true
--define(BOOL_FALSE, 0).                             % 0表示false
--define(no_data, no_data).
+-define(MS_TO_SEC(N), (N div 1000)).
 
-%% 几个用atom定义
--define(TRUE_INT, 1).
--define(FALSE_INT, 0).
--define(TRUE, true).
--define(FALSE, false).
+% 常用常量
+-define(DATA_VALUE, 1).     % 值
+-define(DATA_PERCENT, 2).   % 百分比
+
+-define(UINT_32_MAX, 16#FFFFFFFF). % 无符号int32最大值
+-define(INT_32_MAX, 16#7FFFFFFF).  % 有符号int32最大值
+
+-define(TRUE_INT, 1).            % 1表示true
+-define(FALSE_INT, 0).           % 0表示false
+
+%% 常用atom定义
+-define(TRUE, true).             % true
+-define(FALSE, false).           % false
 -define(true, true).             % true
 -define(false, false).           % false
 -define(value, value).           % value
@@ -99,8 +74,8 @@
 -define(ignore, ignore).         % ignore
 -define(skip, skip).             % skip
 -define(undefined, undefined).   % undefined
--define(NONE, none).             % none
 -define(none, none).             % none
+-define(NONE, none).             % none
 -define(normal, normal).         % normal
 -define(exit, exit).             % exit
 -define(trap_exit, trap_exit).   % trap_exit
@@ -110,62 +85,110 @@
 -define(del, del).               % del
 -define(update, update).         % update
 -define(not_found, not_found).   % not_found
+-define(no_data, no_data).       % no_data
+-define(noreturn, noreturn).     % noreturn
 
--define(STRING_RANDS, ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]).
 
-%% 服务器类型
--define(SERVER_TYPE_CENTER, 1).                                     % 中心服
--define(SERVER_TYPE_GAME, 2).                                       % 游戏服 / 大厅服
--define(SERVER_TYPE_PATH, 999).                                     % 寻路服
+%% 进程之间调用
+-define(GAME_SERVER_TIMEOUT, 5000).   % gen_server默认timeout 默认5秒
 
-%% 服务器备份间隔（必须为偶数）
--define(ROLE_SAVE_INTERVAL, 10).                                    % 角色save间隔，10 min
--define(DB_SAVE_INTERNAL, ?ROLE_SAVE_INTERVAL * 2).                 % 数据库最小回档间隔，为角色dump间隔的两倍
--define(SAVE_RED, 10).                                              % 存储冗余，单位秒
+-define(FUNC, f).              % exec_cast / exec_call / exec_info
 
-%% 审核服
--define(CHECK_SERVER_XINXIN_IOS, xinxin_ios).                       % 欣欣ios审核服
-
-%% 不需要state的gen_server
--define(STATE_NONE, none).
-
-%% 超级随机功能标签
--define(FUN_TAG_RECRUIT, 1).                                        % 招募
-
-%% 敏感字库
--define(BLOCK_WORLDS, block_words).
-
--define(DAY_SECONDS, 86400).
-
-%% 永远
--define(INFINITY, 16#ffffffff).
-
-%% 错误码
--define(C2SERR(R), throw({error, R})).
--define(IS_C2SERR(R), {error, R}).
-
-%% 封装处理try ... catch
--define(TRY_CATCH(Fun),
-    try
-        (Fun)
-    catch
-        Class:Error ->
-            ?ERROR("try_catch_exception:~w ~w", [Class, Error]),
-            ok
+-define(FUNC_INFO(Pid, Fun, Args), erlang:send(Pid, {?FUNC, Fun, Args})).                           % Args 数据，请尽量的小       函数Fun返回：?ok | {?ok, NewState}
+-define(FUNC_CAST(Pid, Fun, Args), gen_server:cast(Pid, {?FUNC, Fun, Args})).                       % Args 数据，请尽量的小       函数Fun返回：?ok | {?ok, NewState}
+-define(FUNC_CALL(Pid, Fun, Args), gen_server:call(Pid, {?FUNC, Fun, Args}, ?GAME_SERVER_TIMEOUT)). % Args 返回 数据，请尽量的小   函数Fun返回：?ok | {?ok, Reply, NewState}
+-define(FUNC_INFO_NORETURN(Pid, Fun, Args), erlang:send(Pid, {?FUNC, Fun, {?noreturn, Args}})).                           % Args 数据，请尽量的小       忽律函数Fun的返回，参数开头不加State
+-define(FUNC_CAST_NORETURN(Pid, Fun, Args), gen_server:cast(Pid, {?FUNC, Fun, {?noreturn, Args}})).                       % Args 数据，请尽量的小       忽律函数Fun的返回，参数开头不加State
+-define(FUNC_CALL_NORETURN(Pid, Fun, Args), gen_server:call(Pid, {?FUNC, Fun, {?noreturn, Args}}, ?GAME_SERVER_TIMEOUT)). % Args 返回 数据，请尽量的小   忽律函数Fun的返回，参数开头不加State
+-define(FUNC_DO(State, Fun, Args),
+    case Args of
+        {?noreturn, Args2} ->
+            erlang:apply(Fun, Args2),
+            {?noreply, State};
+        _ ->
+            case erlang:apply(Fun, [State | Args]) of
+                ?ok -> {?noreply, State};
+                {?ok, NewState} -> {?noreply, NewState};
+                {?noreply, NewState} -> {?noreply, NewState};
+                {?ok, Reply, NewState} -> {?reply, Reply, NewState};
+                {?reply, Reply, NewState} -> {?reply, Reply, NewState};
+                {?stop, Reason, NewState} -> {?stop, Reason, NewState};
+                {?stop, Reason, Reply, NewState} -> {?stop, Reason, Reply, NewState};
+                TryError ->
+                    ?ERROR(" FUNC_ERROR
+Funs :~w
+Args :~w
+Error:~p
+State:~w", [Fun, Args, TryError, State]),
+                    {?noreply, State}
+            end
     end).
 
--define(TRY_CATCH(Fun, ErrReason),
+%% 错误码  这个需要在 pp_xxx 做对应抛出的捕获
+-define(C2S_ERROR(Error), case Error of {?error, _} -> throw(Error); _ -> throw({?error, Error}) end).
+
+%% 异常
+-define(TRY(CODE),
     try
-        (Fun)
-    catch
-        _:ErrReason ->
-            ?ERROR("try_catch_exception :~w", [ErrReason]),
-            ok
+        CODE
+    catch _CodeTryClass:_CodeTryError:_CodeTryStacktrace ->
+        ?ERROR("
+Class:~w
+Error:~w
+Stack:~p", [_CodeTryClass, _CodeTryError, _CodeTryStacktrace]),
+        ?ok
+    end).
+-define(TRY(Fun, DefaultReturn), ?TRY(Fun, [], DefaultReturn)).
+-define(TRY(Fun, Args, DefaultReturn),
+    try
+        erlang:apply(Fun, Args)
+    catch _FunTryClass:_FunTryError:_FunTryStacktrace ->
+        ?ERROR("
+Class:~w
+Error:~w
+Stack:~p", [_FunTryClass, _FunTryError, _FunTryStacktrace]),
+        DefaultReturn
+    end).
+-define(TRY_GATEWAY(Fun, Args, ErrorFun, ErrorFunArgs),
+    try
+        erlang:apply(Fun, Args)
+    catch _PpTryClass:_PpTryError:_PpTryStacktrace ->
+        _PpTryErrorCode =
+            case _PpTryError of
+                {?error, _PpTryErrorCode00} -> _PpTryErrorCode00;
+                _PpTryErrorCode00 when is_integer(_PpTryErrorCode00) -> _PpTryErrorCode00;
+                _PpTryError00 ->
+                    ?ERROR("
+Class:~w
+Error:~w
+Stack:~p", [_PpTryClass, _PpTryError00, _PpTryStacktrace]),
+                    ?ERR_SYSTEM
+            end,
+        erlang:apply(ErrorFun, [_PpTryErrorCode | ErrorFunArgs])
     end).
 
--define(TRY(Code,Code2),try begin Code end catch _:_ -> begin Code2 end end).
+%% IF
+-define(IF(Expr, True, False), case Expr of true -> True; false -> False end).
+-define(IF_NOT_EMPTY(Expr, True, False), case Expr of [_ | _] -> True; _ -> False end).
+-define(IF_CATCH(Expr, True, False), case Expr of true -> True; false -> erlang:throw(False) end).
 
+-define(IF_REAL, fun echeck:real/2).                      % true or false，true返回ok
+-define(IF_ALL_EQUAL, fun echeck:all_equal/3).            % =:=
+-define(IF_NEGATIVE, fun echeck:negative/3).              % =/=
+-define(IF_EQUAL, fun echeck:equal/3).                    % ==
+-define(IF_BIGGER_EQUAL, fun echeck:bigger_equal/3).      % >=
+-define(IF_LESS_EQUAL, fun echeck:less_equal/3).          % =<
+-define(IF_BIGGER, fun echeck:bigger/3).                  % >
+-define(IF_LESS, fun echeck:less/3).                      % <
+
+%%% record 记录
+%%% -------------------------------------------------------------------
+%% 事件监听的信号
+-record(signal, {
+    id           % 信号id,同协议号的区间并要求在对应模块*.hrl里用常量定好  类型:unit32()
+    , target_id  % 目标模块id，同模块协议区间 在common.hrl常量定义好  类型:unit32()
+    , data       % 数据，请尽量的小，不要转#role{}等大块数。大的数据可以通过读ets来实现
+}).
 
 
 -endif.
-
