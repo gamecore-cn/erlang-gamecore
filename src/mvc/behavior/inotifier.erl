@@ -4,15 +4,10 @@
 %%% @doc
 %%%
 %%% @end
-%%% Created : 09. 11月 2021 12:09
+%%% Created : 18. 11月 2021 20:25
 %%%-------------------------------------------------------------------
--module(icommand).
+-module(inotifier).
 -author("xiayiping").
--include("common.hrl").
--include("mvc.hrl").
 
-%% callback
-%%------------------------------------------------------------------
-%% @doc
--callback execute(Notification :: #n{}) ->
-    ?ok.
+%% API
+-export([]).

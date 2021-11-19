@@ -18,7 +18,7 @@
     ?ok.
 
 %% @doc
--callback execute(Notification :: #i_notification{}) ->
+-callback execute(Notification :: #n{}) ->
     ?ok.
 
 %% @doc 删除已注册的`命令ICommand`到`通知Notification`映射。

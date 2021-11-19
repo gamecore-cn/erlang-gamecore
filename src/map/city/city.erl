@@ -4,15 +4,10 @@
 %%% @doc
 %%%
 %%% @end
-%%% Created : 09. 11月 2021 12:09
+%%% Created : 19. 11月 2021 14:45
 %%%-------------------------------------------------------------------
--module(icommand).
+-module(city).
 -author("xiayiping").
--include("common.hrl").
--include("mvc.hrl").
 
-%% callback
-%%------------------------------------------------------------------
-%% @doc
--callback execute(Notification :: #n{}) ->
-    ?ok.
+%% API
+-export([]).
