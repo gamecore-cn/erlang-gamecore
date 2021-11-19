@@ -46,7 +46,7 @@ to_atom(X) when is_list(X) ->
 %% @doc
 %% Convert the given term to list
 %%
-%% Example:
+%% 使用例子:
 %% <pre>
 %% "list" = eutils:to_list(list).
 %% "list" = eutils:to_list("list").
@@ -83,7 +83,7 @@ to_string(V) ->
 %% @doc
 %% Convert the given term to binary
 %%
-%% Example:
+%% 使用例子:
 %% <pre>
 %% &lt;&lt;"list"&gt;&gt; = eutils:to_binary(list).
 %% &lt;&lt;"list"&gt;&gt; = eutils:to_binary("list").
@@ -102,7 +102,7 @@ to_binary(V) ->
 %% @doc
 %% Convert the given term to integer
 %%
-%% Example
+%% 使用例子
 %%<pre>
 %% 123 = eutils:to_integer(123).
 %% 123 = eutils:to_integer("123").
@@ -125,14 +125,14 @@ to_integer(I) when is_float(I) ->
 %% @doc
 %% Convert the given term to float
 %%
-%% Example
+%% 使用例子
 %%<pre>
 %% 123.45 = eutils:to_float(123.45).
 %% 123.45 = eutils:to_float("123.45").
 %% 123.45 = eutils:to_float(<<"123.45">>).
 %% 123.45 = eutils:to_float('123.45').
 %% 123.0 = eutils:to_float(123).
-%% </pre<
+%% </pre>
 %% @end
 to_float(Value) when is_integer(Value) ->
     float(Value);
