@@ -12,6 +12,9 @@
     {parse_transform, lager_transform},
     debug_info
 ]}.
+
 {deps, [
+    {lager, "~> 3.0"},
+    {emysql, "~> 3.0"},
     {jsx, "~> 3.0"}
 ]}.

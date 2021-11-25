@@ -6,8 +6,9 @@
 %%% @end
 %%% Created : 09. 11月 2021 14:52
 %%%-------------------------------------------------------------------
--module(eutils).
+-module(eutil).
 -author("xiayiping").
+-include("common.hrl").
 
 -export([
     to_atom/1,
@@ -16,6 +17,7 @@
     to_binary/1,
     to_integer/1,
     to_float/1,
+
     module_exist/1,
     is_string/1,
     compare_as_list/2,
@@ -114,9 +116,17 @@ to_binary(V) ->
 to_integer(I) when is_integer(I) ->
     I;
 to_integer(I) when is_list(I) ->
-    list_to_integer(I);
-to_integer(I) when is_binary(I); is_bitstring(I) ->
-    binary_to_integer(I);
+    try
+        list_to_integer(I)
+    catch _:_:_ ->
+        round(list_to_float(I))
+    end;
+to_integer(I) when is_list(I) ->
+    try
+        binary_to_integer(I)
+    catch _:_:_ ->
+        round(binary_to_float(I))
+    end;
 to_integer(I) when is_atom(I) ->
     to_integer(atom_to_list(I));
 to_integer(I) when is_float(I) ->
@@ -184,10 +194,9 @@ compare_as_binary(V1, V2) ->
     compare_as(fun to_binary/1, V1, V2).
 
 compare_as(Fun, V1, V2) ->
-    V11 = Fun(V1),
-    V21 = Fun(V2),
+    V11 = Fun(V1), V21 = Fun(V2),
     if
         V11 < V21 -> -1;
         V11 =:= V21 -> 0;
-        true -> 1
+        ?true -> 1
     end.

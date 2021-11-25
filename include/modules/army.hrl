@@ -4,16 +4,17 @@
 %%% @doc
 %%%
 %%% @end
-%%% Created : 09. 11月 2021 12:09
+%%% Created : 23. 11月 2021 16:58
 %%%-------------------------------------------------------------------
--module(icommand).
 -author("xiayiping").
--include("common.hrl").
--include("srv.hrl").
+-ifndef(__army__hrl).
+-define(__army__hrl, true).
+
+%%% define
+%%% -------------------------------------------------------------------
 
 
-%% callback
-%%------------------------------------------------------------------
-%% @doc
--callback execute(Notification :: #n{}) ->
-    ?ok.
+
+
+
+-endif.

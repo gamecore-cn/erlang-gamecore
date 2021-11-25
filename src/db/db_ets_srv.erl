@@ -8,90 +8,84 @@
 %%%-------------------------------------------------------------------
 -module(db_ets_srv).
 -author("xiayiping").
+-include("common.hrl").
+-include("srv.hrl").
 
--behaviour(gen_server).
+-behaviour(game_srv).
 
 %% API
--export([start_link/0]).
+-export([start_link/1, do_init/1, do_call/3, do_cast/2, do_info/2, do_loop/2, do_event/2, do_stop/2, terminate/2, code_change/3]).
 
-%% gen_server callbacks
--export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2,
-    code_change/3]).
-
--define(SERVER, ?MODULE).
-
--record(db_ets_srv_state, {}).
+-record(state, {}).
 
 %%%===================================================================
 %%% API
 %%%===================================================================
+%% @doc 关联开始gen_server并注册服务器(唯一)名称
+start_link(Args) ->
+    game_srv:start_link([?MODULE | Args]).
 
-%% @doc Spawns the server and registers the local name (unique)
--spec(start_link() ->
-    {ok, Pid :: pid()} | ignore | {error, Reason :: term()}).
-start_link() ->
-    gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
+%% @doc 进程初始化
+-spec(do_init(Args :: term()) ->
+    {?ok, State :: term()} |
+    {?stop, Reason :: term()}).
+do_init(_Args) ->
+    {?ok, #state{}}.
 
-%%%===================================================================
-%%% gen_server callbacks
-%%%===================================================================
+%% @doc GenServer Call 消息时调用(少用)
+-spec(do_call(Request :: term(), From :: {pid(), Tag :: term()}, State :: term()) ->
+    {?reply, Reply :: term(), NewState :: term()} |
+    {?noreply, NewState :: term()} |
+    {?stop, Reason :: term(), NewState :: term()}).
+do_call(_Request, _From, State) ->
+    {?reply, ?ok, State}.
 
-%% @private
-%% @doc Initializes the server
--spec(init(Args :: term()) ->
-    {ok, State :: #db_ets_srv_state{}} | {ok, State :: #db_ets_srv_state{}, timeout() | hibernate} |
-    {stop, Reason :: term()} | ignore).
-init([]) ->
-    {ok, #db_ets_srv_state{}}.
+%% @doc GenServer Cast 消息时调用
+-spec(do_cast(Request :: term(), State :: term()) ->
+    {?noreply, NewState :: term()} |
+    {?stop, Reason :: term(), NewState :: term()}).
+do_cast(_Request, State) ->
+    {?noreply, State}.
 
-%% @private
-%% @doc Handling call messages
--spec(handle_call(Request :: term(), From :: {pid(), Tag :: term()},
-    State :: #db_ets_srv_state{}) ->
-    {reply, Reply :: term(), NewState :: #db_ets_srv_state{}} |
-    {reply, Reply :: term(), NewState :: #db_ets_srv_state{}, timeout() | hibernate} |
-    {noreply, NewState :: #db_ets_srv_state{}} |
-    {noreply, NewState :: #db_ets_srv_state{}, timeout() | hibernate} |
-    {stop, Reason :: term(), Reply :: term(), NewState :: #db_ets_srv_state{}} |
-    {stop, Reason :: term(), NewState :: #db_ets_srv_state{}}).
-handle_call(_Request, _From, State = #db_ets_srv_state{}) ->
-    {reply, ok, State}.
+%% @doc 收到其它任何消息时调用
+-spec(do_info(Info :: term(), State :: term()) ->
+    {?noreply, NewState :: term()} |
+    {?stop, Reason :: term(), NewState :: term()}).
+do_info(_Info, State) ->
+    {?noreply, State}.
 
-%% @private
-%% @doc Handling cast messages
--spec(handle_cast(Request :: term(), State :: #db_ets_srv_state{}) ->
-    {noreply, NewState :: #db_ets_srv_state{}} |
-    {noreply, NewState :: #db_ets_srv_state{}, timeout() | hibernate} |
-    {stop, Reason :: term(), NewState :: #db_ets_srv_state{}}).
-handle_cast(_Request, State = #db_ets_srv_state{}) ->
-    {noreply, State}.
+%% @doc 循环定时调用(心跳等)
+-spec(do_loop(Args :: term(), State :: term()) ->
+    {?noreply, NewState :: term()} |
+    {?stop, Reason :: term(), NewState :: term()}).
+do_loop(_Args, State) ->
+    {?noreply, State}.
 
-%% @private
-%% @doc Handling all non call/cast messages
--spec(handle_info(Info :: timeout() | term(), State :: #db_ets_srv_state{}) ->
-    {noreply, NewState :: #db_ets_srv_state{}} |
-    {noreply, NewState :: #db_ets_srv_state{}, timeout() | hibernate} |
-    {stop, Reason :: term(), NewState :: #db_ets_srv_state{}}).
-handle_info(_Info, State = #db_ets_srv_state{}) ->
-    {noreply, State}.
+%% @doc 收到事件消息时调用
+-spec(do_event(Signal :: #s{}, State :: term()) ->
+    {?noreply, NewState :: term()} |
+    {?stop, Reason :: term(), NewState :: term()}).
+do_event(_Signal, State) ->
+    {?noreply, State}.
 
-%% @private
-%% @doc This function is called by a gen_server when it is about to
-%% terminate. It should be the opposite of Module:init/1 and do any
-%% necessary cleaning up. When it returns, the gen_server terminates
-%% with Reason. The return value is ignored.
--spec(terminate(Reason :: (normal | shutdown | {shutdown, term()} | term()),
-    State :: #db_ets_srv_state{}) -> term()).
-terminate(_Reason, _State = #db_ets_srv_state{}) ->
-    ok.
+%% @doc 停止或退出时调用，在terminate之前调用用
+-spec(do_stop(State :: term(), Reason :: term()) -> NewState :: term()).
+do_stop(State, _Reason) ->
+    State.
 
 %% @private
-%% @doc Convert process state when code is changed
--spec(code_change(OldVsn :: term() | {down, term()}, State :: #db_ets_srv_state{},
-    Extra :: term()) ->
-    {ok, NewState :: #db_ets_srv_state{}} | {error, Reason :: term()}).
-code_change(_OldVsn, State = #db_ets_srv_state{}, _Extra) ->
-    {ok, State}.
+%% @doc 函数在gen_server将要调用时被调用终止。
+%%      它应该与Module:init/1相反，并执行任何操作必要的清理。当它返回时，gen_server终止与原因。返回值被忽略。
+-spec(terminate(Reason :: (normal | shutdown | {shutdown, term()} | term()), State :: #state{}) -> term()).
+terminate(_Reason, _State = #state{}) ->
+    ?ok.
+
+%% @private
+%% @doc 热更新代码时 更新State状态
+-spec(code_change(OldVsn :: term() | {down, term()}, State :: #state{}, Extra :: term()) ->
+    {?ok, NewState :: #state{}} | {error, Reason :: term()}).
+code_change(_OldVsn, State = #state{}, _Extra) ->
+    {?ok, State}.
 
 %%%===================================================================
 %%% Internal functions

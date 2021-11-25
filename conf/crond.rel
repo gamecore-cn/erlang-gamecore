@@ -1,0 +1,68 @@
+%%
+%% erlang版crontab配置文件
+%% 长期的定时任务配置
+%% 也可以不在这里配置，而直接通过接口调用，向server_crond增加新任务，格式与此相同
+%% 定时要执行的函数
+%% 唯一ID															秒          分  				    	时 					    日  				月 			周       	执行上限次数0:没上限
+%% {unique_id,		{M,F,A} 										[0-59]		[0-59]					[0-23] 					[1-31]      		[1-12]		[1-7] 			limit }
+%% -------------------------------------------------------------------
+%% 每竞竟场奖励
+{sys_1, 			{ arena_api , 	  reward_day,  		[] } ,		[23] ,		[0] ,					[21] ,					[] ,				[] ,		[] ,		    0 } .
+%% 世界BOSS活动奖励/数据刷新
+%%{sys_2, 			{ world_boss_api, interval_reward,  [] } ,		[0] ,		[30] ,					[16] ,					[] ,				[] ,		[] ,			0 } .
+%% 防沉迷，每晚0点 数据重置
+%%{sys_3, 			{ task_api ,      interval_clear ,  [] },		[0] ,		[0] ,					[0] ,					[] ,				[] ,		[] ,			0 } .
+%% 每分钟查一次公告
+{sys_5, 			{ notice_api,     interval , 		[] },		[0] ,		[] ,					[] ,					[] ,				[] ,		[] ,			0 } .
+%% 每晚0点，刷新
+{sys_role, 			{ role_interval,  interval , 		[] },		[0] ,		[0] ,					[0] ,					[] ,				[] ,		[] ,			0 } .
+%% 每周二凌晨0点固定给内部帐号发放绑定金元
+%% {sys_inside_rmb ,{ role_api,       inside_rmb , 		[] } , 		[10] ,		[0] ,					[0] ,					[] ,				[] ,		[2] ,			0 } .
+%% -------------------------------------------------------------------
+%% 在线人数  每5分钟 统计一次
+{stat_1, 			{ stat_api,   online , 			[] } ,			[5] ,		[0,5,10,15,20,25,30,35,40,45,50,55],[] ,		[] ,				[] ,		[] ,			0  } .
+%% 每小时注册/创建量  每10分钟一次
+{stat_2, 			{ stat_api,   register , 		[] } ,			[58] ,		[9,19,29,39,49,59] ,				[] ,		[] ,				[] ,		[] ,			0 } .
+%% 每天游戏数据汇总  每小时一次
+{stat_3, 			{ stat_api,   gamedata , 		[] } ,			[55] ,		[59] ,								[] ,		[] ,				[] ,		[] ,			0 } .
+
+
+
+
+%% 这里是系统内部接口，不要随意删改
+%% 定时要执行的函数
+%% 唯一ID																		间隔秒数        	执行上限次数  0:没上限
+%% {unique_id,					{M,F,A} 										second			limit }
+%% -------------------------------------------------------------------
+% 清理内存
+{sys_memory_interval,	    	{gc_server, 	 gc, 			    []},		177,			        0	 }.
+% 定其存DB
+{sys_db_save,	    			{gc_server, 	 db_save, 			[]},		7,			        	0	 }.
+% 定其存global_data
+%{sys_global_data,	    		{global_data, 	 save, 				[]},		97,			        	0	 }.
+% 副本
+{sys_copy_interval,	    		{copy_api, 	 	 interval, 			[]},		1,			        	0	 }.
+% xxx_ets_srv数据定时存储
+{sys_db,	    				{db_api, 		 srv_interval,   	[]},		1,			        	0	 }.
+% user数据存储
+%{sys_data_interval,	    	{role_db_srv,    interval_cast, 	[]},		1,			            0	 }.
+%% 定时向Mongo写数据
+%{sys_mongo_flush,	    		{mongo_api, 	 interval_flush, 	[]},		5,			        	0	 }.
+%% Mongo心跳
+%{sys_mongo_interval,	    	{mongo_api, 	 interval_heart, 	[]},		3000,			        0	 }.
+% 定时查看Master节点是否开起
+{sys_master_ping,	    		{gc_server, 	 interval, 			[]},		17,			        	0	 }.
+% Mysql心跳
+{sys_mysql_interval,	    	{mysql_api, 	 interval, 			[]},		57,			            0	 }.
+% 地图
+{sys_scene_interval,	   		{scene_api, 	 interval, 			[]},		0.5,			        0	 }.
+% 清理EtsOffLine 长时间没用到的数据
+{sys_role_interval,	    		{role_interval,  interval_clean, 	[]},		277,			        0	 }.
+% 时段限次广播
+{sys_broadcast_interval,	    {broadcast_api,  interval, 			[]},		1,			        	0	 }.
+% 心跳时间校正
+{sys_heart_time,	    		{system_api, 	 heart, 			[]},		3,			        	0	 }.
+% 每三秒检查
+{check_interval,	    		{role_interval,  interval_seconds, 	[]},		3,			            0	 }.
+% 禁言uuid
+{sys_db,	    				{chat_api, 		 interval_banned,   []},		3777,			        0	 }.

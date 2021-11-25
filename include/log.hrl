@@ -30,4 +30,6 @@
     -define(ERROR(Format, Args), io:format("[~p]~p:~p " ++ Format ++ "~n", [error, ?MODULE, ?LINE | Args])).
 -endif.
 
+-define(ECHO_MODULE_START, ?INFO("~s 启动..", [?MODULE])).
+
 -endif.

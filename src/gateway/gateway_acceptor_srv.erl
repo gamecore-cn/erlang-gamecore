@@ -4,9 +4,9 @@
 %%% @doc
 %%%
 %%% @end
-%%% Created : 19. 11月 2021 18:39
+%%% Created : 24. 11月 2021 10:26
 %%%-------------------------------------------------------------------
--module(activity_srv).
+-module(gateway_acceptor_srv).
 -author("xiayiping").
 -include("common.hrl").
 -include("srv.hrl").

@@ -23,10 +23,10 @@
 ]).
 
 to_upper(B) ->
-    eutils:to_binary(string:to_upper(eutils:to_string(B))).
+    eutil:to_binary(string:to_upper(eutil:to_string(B))).
 
 remove_accents(B) ->
-    eutils:to_binary(estring:remove_accents(eutils:to_string(B))).
+    eutil:to_binary(estring:remove_accents(eutil:to_string(B))).
 
 %% @doc
 %% Return the number corresponding to the given binary

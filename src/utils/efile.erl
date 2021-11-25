@@ -113,7 +113,7 @@ copy(Source, Destination) ->
 %% @doc
 %% @end
 copy(Source, Destination, Options) ->
-    case elists:include(Options, recursive) of
+    case elist:include(Options, recursive) of
         true ->
             Base = filename:basename(Source),
             Dest = filename:join(Destination, Base),
@@ -134,7 +134,7 @@ copy(Source, Destination, Options) ->
                                     SubFiles1 = case lists:keyfind(exclude, 1, Options) of
                                                     false -> SubFiles;
                                                     {exclude, ExcludedFiles} ->
-                                                        elists:delete_if(
+                                                        elist:delete_if(
                                                             fun(File) ->
                                                                 lists:any(
                                                                     fun(Exclude) ->
@@ -146,7 +146,7 @@ copy(Source, Destination, Options) ->
                                                     false ->
                                                         SubFiles1;
                                                     {only, OnlyFiles} ->
-                                                        elists:delete_if(
+                                                        elist:delete_if(
                                                             fun(File) ->
                                                                 lists:all(
                                                                     fun(Only) ->
@@ -218,7 +218,7 @@ realpath(Path) ->
 %% Same as <tt>filelib:wildcard/1</tt> but where files listed in <tt>Exclude</tt> are excluded.
 %% @end
 wildcard(Path, Exclude) ->
-    elists:delete_if(fun
+    elist:delete_if(fun
                          (P) ->
                              lists:any(fun
                                            (E) ->

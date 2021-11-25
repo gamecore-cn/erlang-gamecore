@@ -8,23 +8,24 @@
 %%%-------------------------------------------------------------------
 -module(elist).
 -author("xiayiping").
+-include("common.hrl").
 
 -export([
     is_keylist/1,
-    merge_keylists/3,
-    keyfind/3,
-    keyfind/4,
-    keyfindm/2,
-    keyfindm/3,
-    keysearch/2,
-    keysearch/3,
-    keymatch/3,
-    keylistmap/2,
-    keyfindlast/3,
-    keyfindlast/4,
-    keyfindfirst/3,
-    keyfindfirst/4,
-    keysdelete/3,
+    merge_key_list/3,
+    key_find/3,
+    key_find/4,
+    key_find_m/2,
+    key_find_m/3,
+    key_search/2,
+    key_search/3,
+    key_match/3,
+    key_list_map/2,
+    key_find_last/3,
+    key_find_last/4,
+    key_find_first/3,
+    key_find_first/4,
+    keys_delete/3,
     identical/2,
     include/2,
     include_list/2,
@@ -38,11 +39,12 @@
 fmax(_, []) -> error;
 fmax(Fun, List) ->
     [First | Rest] = List,
-    lists:foldl(fun(Element, Max) ->
-        case Fun(Element) > Fun(Max) of
-            true -> Element;
-            false -> Max
-        end
+    lists:foldl(fun
+                    (Element, Max) ->
+                        case Fun(Element) > Fun(Max) of
+                            true -> Element;
+                            false -> Max
+                        end
                 end, First, Rest).
 
 %% @doc
@@ -58,47 +60,48 @@ is_keylist(L) when is_list(L) ->
 %% <pre>
 %% Args = [{a, 1}, {b, 2}],
 %% Default = [{b, 3}, {c, 4}],
-%% elists:merge_keylists(1, Args, Default),
+%% elist:merge_key_list(1, Args, Default),
 %%   #=> [{c, 4}, {a, 1}, {b, 2}]
 %% </pre>
 %% @end
-merge_keylists(_, [], TupleList2) ->
+merge_key_list(_, [], TupleList2) ->
     TupleList2;
-merge_keylists(N, [Tuple | Rest], TupleList2) when
+merge_key_list(N, [Tuple | Rest], TupleList2) when
     is_integer(N), is_list(TupleList2), is_tuple(Tuple), is_list(Rest) ->
     Key = element(N, Tuple),
     TupleList3 = case lists:keysearch(Key, N, TupleList2) of
                      {value, _} -> lists:keydelete(Key, N, TupleList2);
                      false -> TupleList2
                  end,
-    merge_keylists(N, Rest, TupleList3 ++ [Tuple]);
-merge_keylists(N, [Tuple | Rest], TupleList2) when
+    merge_key_list(N, Rest, TupleList3 ++ [Tuple]);
+merge_key_list(N, [Tuple | Rest], TupleList2) when
     is_integer(N), is_list(TupleList2), is_list(Rest) ->
-    merge_keylists(N, Rest, TupleList2 ++ [Tuple]).
+    merge_key_list(N, Rest, TupleList2 ++ [Tuple]).
 
 %% @hidden
-keyfind(Key, N, List) ->
-    keyfind(Key, N, List, false).
+key_find(Key, N, List) ->
+    key_find(Key, N, List, false).
 
 %% @doc
 %% @end
-keyfindm(Keys, List) ->
-    keyfindm(Keys, List, false).
+key_find_m(Keys, List) ->
+    key_find_m(Keys, List, false).
 
 %% @doc
 %% @end
-keyfindm(_, [], Default) -> Default;
-keyfindm(Keys, [Tuple | Rest], Default) ->
-    case lists:all(fun({Key, N}) ->
-        if
-            size(Tuple) >= N, element(N, Tuple) =:= Key ->
-                true;
-            true ->
-                false
-        end
+key_find_m(_, [], Default) -> Default;
+key_find_m(Keys, [Tuple | Rest], Default) ->
+    case lists:all(fun
+                       ({Key, N}) ->
+                           if
+                               size(Tuple) >= N, element(N, Tuple) =:= Key ->
+                                   true;
+                               true ->
+                                   false
+                           end
                    end, Keys) of
         true -> Tuple;
-        false -> keyfindm(Keys, Rest, Default)
+        false -> key_find_m(Keys, Rest, Default)
     end.
 
 %% @doc
@@ -111,17 +114,17 @@ keyfindm(Keys, [Tuple | Rest], Default) ->
 %%     {1, erlang:binary_to_list/1},
 %%     {3, fun(X) -> X * 2 end}
 %%   ],
-%% elists:keylistmap(Funs, Args).
+%% elist:keylistmap(Funs, Args).
 %%   # => [{"toto", world, 4}, {"titi", hello}]
 %% </pre>
 %% @end
-keylistmap(Funs, TupleList) when is_list(Funs), is_list(TupleList) ->
-    keylistmap(Funs, TupleList, []).
+key_list_map(Funs, TupleList) when is_list(Funs), is_list(TupleList) ->
+    key_list_map(Funs, TupleList, []).
 
 %% @hidden
-keylistmap(_, [], Result) -> lists:reverse(Result);
-keylistmap(Funs, [Tuple | Rest], Result) ->
-    keylistmap(Funs, Rest,
+key_list_map(_, [], Result) -> lists:reverse(Result);
+key_list_map(Funs, [Tuple | Rest], Result) ->
+    key_list_map(Funs, Rest,
         [list_to_tuple(
             lists:map(fun({N, Data}) ->
                 case lists:keyfind(N, 1, Funs) of
@@ -142,65 +145,66 @@ keylistmap(Funs, [Tuple | Rest], Result) ->
 %%   #=> 1
 %% </pre>
 %% @end
-keyfind(Key, N, List, Default) ->
+key_find(Key, N, List, Default) ->
     case lists:keyfind(Key, N, List) of
         {Key, Result} -> Result;
         _ -> Default
     end.
 
 %% @doc
-%% Same as elists:keyfindfirst/4 where Default = undefined
+%% Same as elist:key_find_first/4 where Default = ?undefined
 %% @end
-keyfindfirst(Keys, N, List) when is_list(Keys) ->
-    keyfindfirst(Keys, N, List, undefined).
+key_find_first(Keys, N, List) when is_list(Keys) ->
+    key_find_first(Keys, N, List, ?undefined).
 
 %% @doc
 %% @end
-keyfindfirst([], _, _, Default) ->
+key_find_first([], _, _, Default) ->
     Default;
-keyfindfirst([Key | Keys], N, List, Default) ->
+key_find_first([Key | Keys], N, List, Default) ->
     case lists:keyfind(Key, N, List) of
         {Key, Value} -> {Key, Value};
-        _ -> keyfindfirst(Keys, N, List, Default)
+        _ -> key_find_first(Keys, N, List, Default)
     end.
 
 %% @doc
 %% @end
-keysdelete(Keys, N, List) ->
-    lists:foldl(fun(Key, Acc) ->
-        lists:keydelete(Key, N, Acc)
+keys_delete(Keys, N, List) ->
+    lists:foldl(fun
+                    (Key, Acc) ->
+                        lists:keydelete(Key, N, Acc)
                 end, List, Keys).
 
 %% @doc
 %% @end
-keysearch(Fun, List) ->
-    keysearch(Fun, List, undefined).
+key_search(Fun, List) ->
+    key_search(Fun, List, ?undefined).
 
 %% @doc
 %% @end
-keysearch(_, [], Default) -> Default;
-keysearch(Fun, [E | List], Default) ->
+key_search(_, [], Default) -> Default;
+key_search(Fun, [E | List], Default) ->
     case Fun(E) of
         true -> E;
-        false -> keysearch(Fun, List, Default)
+        false -> key_search(Fun, List, Default)
     end.
 
 
 %% @doc
-%% Same as elists:keyfindlast/4 where Default = undefined
+%% Same as elist:key_find_last/4 where Default = ?undefined
 %% @end
-keyfindlast(Keys, N, List) when is_list(Keys) ->
-    keyfindlast(Keys, N, List, undefined).
+key_find_last(Keys, N, List) when is_list(Keys) ->
+    key_find_last(Keys, N, List, ?undefined).
 
 %% @doc
 %% @end
-keyfindlast(Keys, N, List, Default) when is_list(Keys) ->
-    keyfindfirst(lists:reverse(Keys), N, List, Default).
+key_find_last(Keys, N, List, Default) when is_list(Keys) ->
+    key_find_first(lists:reverse(Keys), N, List, Default).
 
 %% @doc
 %% @end
-keymatch(Tuple, N, List) when is_tuple(Tuple), is_tuple(N), is_list(List) ->
-    keymatch(
+key_match(Tuple, N, List) when is_tuple(Tuple), is_tuple(N), is_list(List) ->
+    key_match(
         fun(E, T) ->
             {_, Result} = lists:foldl(
                 fun(I, {I1, Res}) ->
@@ -210,10 +214,10 @@ keymatch(Tuple, N, List) when is_tuple(Tuple), is_tuple(N), is_list(List) ->
                                false -> Res and false
                            end,
                     {I1 + 1, Res1}
-                end, {1, true}, eutils:to_list(N)),
+                end, {1, true}, eutil:to_list(N)),
             Result
         end, Tuple, List);
-keymatch(Fun, Tuple, List) when is_tuple(Tuple), is_function(Fun), is_list(List) ->
+key_match(Fun, Tuple, List) when is_tuple(Tuple), is_function(Fun), is_list(List) ->
     lists:foldl(fun(Element, Acc) ->
         case Fun(Element, Tuple) of
             true -> [Element | Acc];
@@ -241,19 +245,21 @@ include(List, E) when is_list(List) ->
 %% Return true if all element in IncList are in List
 %% @end
 include_list(List, IncList) when is_list(List), is_list(IncList) ->
-    lists:all(fun(Inc) ->
-        include(List, Inc)
+    lists:all(fun
+                  (Inc) ->
+                      include(List, Inc)
               end, IncList).
 
 
 %% @doc
 %% @end
 delete_if(Fun, List) ->
-    lists:reverse(lists:foldl(fun(E, Acc) ->
-        case Fun(E) of
-            true -> Acc;
-            false -> [E | Acc]
-        end
+    lists:reverse(lists:foldl(fun
+                                  (E, Acc) ->
+                                      case Fun(E) of
+                                          true -> Acc;
+                                          false -> [E | Acc]
+                                      end
                               end, [], List)).
 
 %% @doc
@@ -262,7 +268,7 @@ delete_if(Fun, List) ->
 index_of(List, Item) when is_list(List) ->
     index_of(Item, List, 1).
 
-%% @nodoc
-index_of(_, [], _) -> not_found;
+
+index_of(_, [], _) -> ?not_found;
 index_of(Item, [Item | _], Index) -> Index;
 index_of(Item, [_ | Tl], Index) -> index_of(Item, Tl, Index + 1).

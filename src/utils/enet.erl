@@ -30,7 +30,7 @@ ip_to_str({A, B, C, D}) ->
 ip_to_str(IP) when is_list(IP) ->
     IP;
 ip_to_str(IP) when is_binary(IP) ->
-    lists:flatten(eutils:to_list(IP)).
+    lists:flatten(eutil:to_list(IP)).
 
 get_active_ip() ->
     get_active_ip(get_iflist()).
@@ -38,8 +38,7 @@ get_active_ip() ->
 get_loopback() ->
     get_loopback(get_iflist()).
 
-% privates
-
+% @privates
 get_active_ip(If_list) ->
     get_ip([A || A <- If_list, inet:ifget(A,[addr]) /= {ok,[{addr,{127,0,0,1}}]}, filter_networkcard(list_to_binary(A))]).
 

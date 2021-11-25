@@ -22,16 +22,16 @@
 
 %% These are used exclusively as guards and so the function like
 %% defines make sense
--define( is_num(X), (X >= $0 andalso X =< $9) ).
--define( is_meridian(X), (X==[] orelse X==[am] orelse X==[pm]) ).
--define( is_us_sep(X), ( X==$/) ).
--define( is_world_sep(X), ( X==$-) ).
+-define(is_num(X), (X >= $0 andalso X =< $9)).
+-define(is_meridian(X), (X == [] orelse X == [am] orelse X == [pm])).
+-define(is_us_sep(X), (X == $/)).
+-define(is_world_sep(X), (X == $-)).
 
--define( MONTH_TAG, month ).
--define( is_year(X), (is_integer(X) andalso X > 31) ).
--define( is_day(X), (is_integer(X) andalso X =< 31) ).
--define( is_hinted_month(X), (is_tuple(X) andalso size(X)=:=2 andalso element(1,X)=:=?MONTH_TAG) ).
--define( is_month(X), ( (is_integer(X) andalso X =< 12) orelse ?is_hinted_month(X) ) ).
+-define(MONTH_TAG, month).
+-define(is_year(X), (is_integer(X) andalso X > 31)).
+-define(is_day(X), (is_integer(X) andalso X =< 31)).
+-define(is_hinted_month(X), (is_tuple(X) andalso size(X) =:= 2 andalso element(1, X) =:= ?MONTH_TAG)).
+-define(is_month(X), ((is_integer(X) andalso X =< 12) orelse ?is_hinted_month(X))).
 
 -define(GREGORIAN_SECONDS_1970, 62167219200).
 
@@ -44,10 +44,10 @@
 -type microsecond() :: 0..1000000.
 
 -type week_num() :: 1..7.
--type date() :: {year(),month(),day()}.
--type time() :: {hour(),minute(),second()} |{hour(),minute(),second(), microsecond()}.
--type datetime() :: {date(),time()}.
--type now() :: {integer(),integer(),integer()}.
+-type date() :: {year(), month(), day()}.
+-type time() :: {hour(), minute(), second()} |{hour(), minute(), second(), microsecond()}.
+-type datetime() :: {date(), time()}.
+-type now() :: {integer(), integer(), integer()}.
 
 %%
 %% EXPORTS
@@ -55,9 +55,11 @@
 
 %% @hidden
 -define(nif_stub, nif_stub_error(?LINE)).
+
 %% @hidden
 nif_stub_error(Line) ->
-    erlang:nif_error({nif_not_loaded,module,?MODULE,line,Line}).
+    erlang:nif_error({nif_not_loaded, module, ?MODULE, line, Line}).
+
 %% @hidden
 init() ->
     erlang:load_nif(filename:join(ecode:priv_dir(?MODULE), ?MODULE), 0).
@@ -73,28 +75,28 @@ add(DateTime, N, seconds) ->
     T2 = T1 + N,
     calendar:gregorian_seconds_to_datetime(T2);
 add(DateTime, N, minutes) ->
-    add(DateTime, 60*N, seconds);
+    add(DateTime, 60 * N, seconds);
 add(DateTime, N, hours) ->
-    add(DateTime, 60*N, minutes);
+    add(DateTime, 60 * N, minutes);
 add(DateTime, N, days) ->
-    add(DateTime, 24*N, hours);
+    add(DateTime, 24 * N, hours);
 add(DateTime, N, weeks) ->
-    add(DateTime, 7*N, days);
-add({{YYYY, MM, DD}=Date, Time}, 0, months) ->
+    add(DateTime, 7 * N, days);
+add({{YYYY, MM, DD} = Date, Time}, 0, months) ->
     case calendar:valid_date(Date) of
-        true  -> {Date, Time};
-        false -> add({{YYYY, MM, DD-1}, Time}, 0, months)
+        true -> {Date, Time};
+        false -> add({{YYYY, MM, DD - 1}, Time}, 0, months)
     end;
 add({{YYYY, MM, DD}, Time}, N, months) when N > 0 andalso MM < 12 ->
-    add({{YYYY, MM+1, DD}, Time}, N-1, months);
+    add({{YYYY, MM + 1, DD}, Time}, N - 1, months);
 add({{YYYY, MM, DD}, Time}, N, months) when N > 0 andalso MM =:= 12 ->
-    add({{YYYY+1, 1, DD}, Time}, N-1, months);
+    add({{YYYY + 1, 1, DD}, Time}, N - 1, months);
 add({{YYYY, MM, DD}, Time}, N, months) when N < 0 andalso MM > 1 ->
-    add({{YYYY, MM-1, DD}, Time}, N+1, months);
+    add({{YYYY, MM - 1, DD}, Time}, N + 1, months);
 add({{YYYY, MM, DD}, Time}, N, months) when N < 0 andalso MM =:= 1 ->
-    add({{YYYY-1, 12, DD}, Time}, N+1, months);
+    add({{YYYY - 1, 12, DD}, Time}, N + 1, months);
 add(Date, N, years) ->
-    add(Date, 12*N, months).
+    add(Date, 12 * N, months).
 
 %% @spec add(datetime(), atom() | integer()) -> datetime()
 add(Date, second) ->
@@ -111,7 +113,7 @@ add(Date, month) ->
     add(Date, 1, months);
 add(Date, year) ->
     add(Date, 1, years);
-add(Date, N)  ->
+add(Date, N) ->
     add(Date, N, days).
 
 %% @spec today() -> datetime()
@@ -137,25 +139,25 @@ to_iso8601(Date) ->
 -spec format(string()) -> string().
 %% @doc format current local time as Format
 format(Format) ->
-    format(Format, calendar:universal_time(),[]).
+    format(Format, calendar:universal_time(), []).
 
--spec format(string(),datetime() | now()) -> string().
+-spec format(string(), datetime() | now()) -> string().
 %% @doc format Date as Format
-format(Format, {_,_,Ms}=Now) ->
-    {Date,{H,M,S}} = calendar:now_to_datetime(Now),
-    format(Format, {Date, {H,M,S,Ms}}, []);
+format(Format, {_, _, Ms} = Now) ->
+    {Date, {H, M, S}} = calendar:now_to_datetime(Now),
+    format(Format, {Date, {H, M, S, Ms}}, []);
 format(Format, Date) ->
     format(Format, Date, []).
 
 -spec parse(string()) -> datetime().
 %% @doc parses the datetime from a string
 parse(Date) ->
-    do_parse(Date, calendar:universal_time(),[]).
+    do_parse(Date, calendar:universal_time(), []).
 
--spec parse(string(),datetime() | now()) -> datetime().
+-spec parse(string(), datetime() | now()) -> datetime().
 
 %% @doc parses the datetime from a string
-parse(Date, {_,_,_}=Now) ->
+parse(Date, {_, _, _} = Now) ->
     do_parse(Date, calendar:now_to_datetime(Now), []);
 parse(Date, Now) ->
     do_parse(Date, Now, []).
@@ -172,16 +174,16 @@ do_parse(Date, Now, Opts) ->
                 true -> {D1, T1};
                 false -> erlang:throw({?MODULE, {bad_date, Date}})
             end;
-        {D1, _T1, {Ms}} = {{Y, M, D}, {H, M1, S},  {Ms}}
+        {D1, _T1, {Ms}} = {{Y, M, D}, {H, M1, S}, {Ms}}
             when is_number(Y), is_number(M),
             is_number(D), is_number(H),
             is_number(M1), is_number(S),
             is_number(Ms) ->
             case calendar:valid_date(D1) of
-                true -> {D1, {H,M1,S,Ms}};
+                true -> {D1, {H, M1, S, Ms}};
                 false -> erlang:throw({?MODULE, {bad_date, Date}})
             end;
-        Unknown -> erlang:throw({?MODULE, {bad_date, Date, Unknown }})
+        Unknown -> erlang:throw({?MODULE, {bad_date, Date, Unknown}})
     end.
 
 filter_hints({{Y, {?MONTH_TAG, M}, D}, {H, M1, S}}) ->
@@ -195,8 +197,8 @@ filter_hints(Other) ->
 %% @doc parses the datetime from a string into 'now' format
 nparse(Date) ->
     case parse(Date) of
-        {DateS, {H, M, S, Ms} } ->
-            GSeconds = calendar:datetime_to_gregorian_seconds({DateS, {H, M, S} }),
+        {DateS, {H, M, S, Ms}} ->
+            GSeconds = calendar:datetime_to_gregorian_seconds({DateS, {H, M, S}}),
             ESeconds = GSeconds - ?GREGORIAN_SECONDS_1970,
             {ESeconds div 1000000, ESeconds rem 1000000, Ms};
         DateTime ->
@@ -209,149 +211,149 @@ nparse(Date) ->
 %% LOCAL FUNCTIONS
 %%
 
-parse([Year, X, Month, X, Day, Hour, $:, Min, $:, Sec, $Z ], _Now, _Opts)
-    when  (?is_us_sep(X) orelse ?is_world_sep(X))
+parse([Year, X, Month, X, Day, Hour, $:, Min, $:, Sec, $Z], _Now, _Opts)
+    when (?is_us_sep(X) orelse ?is_world_sep(X))
     andalso Year > 31 ->
-    {{Year, Month, Day}, {hour(Hour, []), Min, Sec}, { 0}};
+    {{Year, Month, Day}, {hour(Hour, []), Min, Sec}, {0}};
 
-parse([Year, X, Month, X, Day, Hour, $:, Min, $:, Sec, $+, Off | _Rest ], _Now, _Opts)
-    when  (?is_us_sep(X) orelse ?is_world_sep(X))
+parse([Year, X, Month, X, Day, Hour, $:, Min, $:, Sec, $+, Off | _Rest], _Now, _Opts)
+    when (?is_us_sep(X) orelse ?is_world_sep(X))
     andalso Year > 31 ->
     {{Year, Month, Day}, {hour(Hour, []) - Off, Min, Sec}, {0}};
 
-parse([Year, X, Month, X, Day, Hour, $:, Min, $:, Sec, $-, Off | _Rest ], _Now, _Opts)
-    when  (?is_us_sep(X) orelse ?is_world_sep(X))
+parse([Year, X, Month, X, Day, Hour, $:, Min, $:, Sec, $-, Off | _Rest], _Now, _Opts)
+    when (?is_us_sep(X) orelse ?is_world_sep(X))
     andalso Year > 31 ->
     {{Year, Month, Day}, {hour(Hour, []) + Off, Min, Sec}, {0}};
 
 %% Date/Times 22 Aug 2008 6:35.0001 PM
-parse([Year,X,Month,X,Day,Hour,$:,Min,$:,Sec,$., Ms | PAM], _Now, _Opts)
+parse([Year, X, Month, X, Day, Hour, $:, Min, $:, Sec, $., Ms | PAM], _Now, _Opts)
     when ?is_meridian(PAM) andalso
     (?is_us_sep(X) orelse ?is_world_sep(X))
     andalso ?is_year(Year) ->
     {{Year, Month, Day}, {hour(Hour, PAM), Min, Sec}, {Ms}};
-parse([Month,X,Day,X,Year,Hour,$:,Min,$:,Sec,$., Ms | PAM], _Now, _Opts)
+parse([Month, X, Day, X, Year, Hour, $:, Min, $:, Sec, $., Ms | PAM], _Now, _Opts)
     when ?is_meridian(PAM) andalso ?is_us_sep(X)
     andalso ?is_year(Year) ->
     {{Year, Month, Day}, {hour(Hour, PAM), Min, Sec}, {Ms}};
-parse([Day,X,Month,X,Year,Hour,$:,Min,$:,Sec,$., Ms | PAM], _Now, _Opts)
+parse([Day, X, Month, X, Year, Hour, $:, Min, $:, Sec, $., Ms | PAM], _Now, _Opts)
     when ?is_meridian(PAM) andalso ?is_world_sep(X)
     andalso ?is_year(Year) ->
     {{Year, Month, Day}, {hour(Hour, PAM), Min, Sec}, {Ms}};
 
-parse([Year,X,Month,X,Day,Hour,$:,Min,$:,Sec,$., Ms], _Now, _Opts)
-    when  (?is_us_sep(X) orelse ?is_world_sep(X))
+parse([Year, X, Month, X, Day, Hour, $:, Min, $:, Sec, $., Ms], _Now, _Opts)
+    when (?is_us_sep(X) orelse ?is_world_sep(X))
     andalso ?is_year(Year) ->
-    {{Year, Month, Day}, {hour(Hour,[]), Min, Sec}, {Ms}};
-parse([Month,X,Day,X,Year,Hour,$:,Min,$:,Sec,$., Ms], _Now, _Opts)
+    {{Year, Month, Day}, {hour(Hour, []), Min, Sec}, {Ms}};
+parse([Month, X, Day, X, Year, Hour, $:, Min, $:, Sec, $., Ms], _Now, _Opts)
     when ?is_us_sep(X) andalso ?is_month(Month) ->
     {{Year, Month, Day}, {hour(Hour, []), Min, Sec}, {Ms}};
-parse([Day,X,Month,X,Year,Hour,$:,Min,$:,Sec,$., Ms ], _Now, _Opts)
+parse([Day, X, Month, X, Year, Hour, $:, Min, $:, Sec, $., Ms], _Now, _Opts)
     when ?is_world_sep(X) andalso ?is_month(Month) ->
     {{Year, Month, Day}, {hour(Hour, []), Min, Sec}, {Ms}};
 
 %% Date/Times Dec 1st, 2012 6:25 PM
-parse([Month,Day,Year,Hour,$:,Min,$:,Sec | PAM], _Now, _Opts)
+parse([Month, Day, Year, Hour, $:, Min, $:, Sec | PAM], _Now, _Opts)
     when ?is_meridian(PAM) andalso ?is_hinted_month(Month) andalso ?is_day(Day) ->
     {{Year, Month, Day}, {hour(Hour, PAM), Min, Sec}};
-parse([Month,Day,Year,Hour,$:,Min | PAM], _Now, _Opts)
+parse([Month, Day, Year, Hour, $:, Min | PAM], _Now, _Opts)
     when ?is_meridian(PAM) andalso ?is_hinted_month(Month) andalso ?is_day(Day) ->
     {{Year, Month, Day}, {hour(Hour, PAM), Min, 0}};
-parse([Month,Day,Year,Hour | PAM], _Now, _Opts)
+parse([Month, Day, Year, Hour | PAM], _Now, _Opts)
     when ?is_meridian(PAM) andalso ?is_hinted_month(Month) andalso ?is_day(Day) ->
     {{Year, Month, Day}, {hour(Hour, PAM), 0, 0}};
 
 %% Date/Times Dec 1st, 2012 18:25:15 (no AM/PM)
-parse([Month,Day,Year,Hour,$:,Min,$:,Sec], _Now, _Opts)
+parse([Month, Day, Year, Hour, $:, Min, $:, Sec], _Now, _Opts)
     when ?is_hinted_month(Month) andalso ?is_day(Day) ->
     {{Year, Month, Day}, {hour(Hour, []), Min, Sec}};
-parse([Month,Day,Year,Hour,$:,Min], _Now, _Opts)
+parse([Month, Day, Year, Hour, $:, Min], _Now, _Opts)
     when ?is_hinted_month(Month) andalso ?is_day(Day) ->
     {{Year, Month, Day}, {hour(Hour, []), Min, 0}};
 
 %% Times - 21:45, 13:45:54, 13:15PM etc
-parse([Hour,$:,Min,$:,Sec | PAM], {Date, _Time}, _O) when ?is_meridian(PAM) ->
+parse([Hour, $:, Min, $:, Sec | PAM], {Date, _Time}, _O) when ?is_meridian(PAM) ->
     {Date, {hour(Hour, PAM), Min, Sec}};
-parse([Hour,$:,Min | PAM], {Date, _Time}, _Opts) when ?is_meridian(PAM) ->
+parse([Hour, $:, Min | PAM], {Date, _Time}, _Opts) when ?is_meridian(PAM) ->
     {Date, {hour(Hour, PAM), Min, 0}};
-parse([Hour | PAM],{Date,_Time}, _Opts) when ?is_meridian(PAM) ->
-    {Date, {hour(Hour,PAM), 0, 0}};
+parse([Hour | PAM], {Date, _Time}, _Opts) when ?is_meridian(PAM) ->
+    {Date, {hour(Hour, PAM), 0, 0}};
 
 %% Dates (Any combination with word month "aug 8th, 2008", "8 aug 2008", "2008 aug 21" "2008 5 aug" )
 %% Will work because of the "Hinted month"
-parse([Day,Month,Year], {_Date, Time}, _Opts)
+parse([Day, Month, Year], {_Date, Time}, _Opts)
     when ?is_day(Day) andalso ?is_hinted_month(Month) andalso ?is_year(Year) ->
     {{Year, Month, Day}, Time};
-parse([Month,Day,Year], {_Date, Time}, _Opts)
+parse([Month, Day, Year], {_Date, Time}, _Opts)
     when ?is_day(Day) andalso ?is_hinted_month(Month) andalso ?is_year(Year) ->
     {{Year, Month, Day}, Time};
-parse([Year,Day,Month], {_Date, Time}, _Opts)
+parse([Year, Day, Month], {_Date, Time}, _Opts)
     when ?is_day(Day) andalso ?is_hinted_month(Month) andalso ?is_year(Year) ->
     {{Year, Month, Day}, Time};
-parse([Year,Month,Day], {_Date, Time}, _Opts)
+parse([Year, Month, Day], {_Date, Time}, _Opts)
     when ?is_day(Day) andalso ?is_hinted_month(Month) andalso ?is_year(Year) ->
     {{Year, Month, Day}, Time};
 
 %% Dates 23/april/1963
-parse([Day,Month,Year], {_Date, Time}, _Opts) ->
+parse([Day, Month, Year], {_Date, Time}, _Opts) ->
     {{Year, Month, Day}, Time};
-parse([Year,X,Month,X,Day], {_Date, Time}, _Opts)
+parse([Year, X, Month, X, Day], {_Date, Time}, _Opts)
     when (?is_us_sep(X) orelse ?is_world_sep(X))
     andalso ?is_year(Year) ->
     {{Year, Month, Day}, Time};
-parse([Month,X,Day,X,Year], {_Date, Time}, _Opts) when ?is_us_sep(X) ->
+parse([Month, X, Day, X, Year], {_Date, Time}, _Opts) when ?is_us_sep(X) ->
     {{Year, Month, Day}, Time};
-parse([Day,X,Month,X,Year], {_Date, Time}, _Opts) when ?is_world_sep(X) ->
+parse([Day, X, Month, X, Year], {_Date, Time}, _Opts) when ?is_world_sep(X) ->
     {{Year, Month, Day}, Time};
 
 %% Date/Times 22 Aug 2008 6:35 PM
 %% Time is "7 PM"
-parse([Year,X,Month,X,Day,Hour | PAM], _Date, _Opts)
+parse([Year, X, Month, X, Day, Hour | PAM], _Date, _Opts)
     when ?is_meridian(PAM) andalso
     (?is_us_sep(X) orelse ?is_world_sep(X))
     andalso ?is_year(Year) ->
     {{Year, Month, Day}, {hour(Hour, PAM), 0, 0}};
-parse([Day,X,Month,X,Year,Hour | PAM], _Date, _Opts)
+parse([Day, X, Month, X, Year, Hour | PAM], _Date, _Opts)
     when ?is_meridian(PAM) andalso ?is_world_sep(X) ->
     {{Year, Month, Day}, {hour(Hour, PAM), 0, 0}};
-parse([Month,X,Day,X,Year,Hour | PAM], _Date, _Opts)
+parse([Month, X, Day, X, Year, Hour | PAM], _Date, _Opts)
     when ?is_meridian(PAM) andalso ?is_us_sep(X) ->
     {{Year, Month, Day}, {hour(Hour, PAM), 0, 0}};
 
 
 %% Time is "6:35 PM" ms return
-parse([Year,X,Month,X,Day,Hour,$:,Min | PAM], _Date, _Opts)
+parse([Year, X, Month, X, Day, Hour, $:, Min | PAM], _Date, _Opts)
     when ?is_meridian(PAM) andalso
     (?is_us_sep(X) orelse ?is_world_sep(X))
     andalso ?is_year(Year) ->
     {{Year, Month, Day}, {hour(Hour, PAM), Min, 0}};
-parse([Day,X,Month,X,Year,Hour,$:,Min | PAM], _Date, _Opts)
+parse([Day, X, Month, X, Year, Hour, $:, Min | PAM], _Date, _Opts)
     when ?is_meridian(PAM) andalso ?is_world_sep(X) ->
     {{Year, Month, Day}, {hour(Hour, PAM), Min, 0}};
-parse([Month,X,Day,X,Year,Hour,$:,Min | PAM], _Date, _Opts)
+parse([Month, X, Day, X, Year, Hour, $:, Min | PAM], _Date, _Opts)
     when ?is_meridian(PAM) andalso ?is_us_sep(X) ->
     {{Year, Month, Day}, {hour(Hour, PAM), Min, 0}};
 
 %% Time is "6:35:15 PM"
-parse([Year,X,Month,X,Day,Hour,$:,Min,$:,Sec | PAM], _Now, _Opts)
+parse([Year, X, Month, X, Day, Hour, $:, Min, $:, Sec | PAM], _Now, _Opts)
     when ?is_meridian(PAM) andalso
     (?is_us_sep(X) orelse ?is_world_sep(X))
     andalso ?is_year(Year) ->
     {{Year, Month, Day}, {hour(Hour, PAM), Min, Sec}};
-parse([Month,X,Day,X,Year,Hour,$:,Min,$:,Sec | PAM], _Now, _Opts)
+parse([Month, X, Day, X, Year, Hour, $:, Min, $:, Sec | PAM], _Now, _Opts)
     when ?is_meridian(PAM) andalso ?is_us_sep(X) ->
     {{Year, Month, Day}, {hour(Hour, PAM), Min, Sec}};
-parse([Day,X,Month,X,Year,Hour,$:,Min,$:,Sec | PAM], _Now, _Opts)
+parse([Day, X, Month, X, Year, Hour, $:, Min, $:, Sec | PAM], _Now, _Opts)
     when ?is_meridian(PAM) andalso ?is_world_sep(X) ->
     {{Year, Month, Day}, {hour(Hour, PAM), Min, Sec}};
 
-parse([Day,Month,Year,Hour | PAM], _Now, _Opts)
+parse([Day, Month, Year, Hour | PAM], _Now, _Opts)
     when ?is_meridian(PAM) ->
     {{Year, Month, Day}, {hour(Hour, PAM), 0, 0}};
-parse([Day,Month,Year,Hour,$:,Min | PAM], _Now, _Opts)
+parse([Day, Month, Year, Hour, $:, Min | PAM], _Now, _Opts)
     when ?is_meridian(PAM) ->
     {{Year, Month, Day}, {hour(Hour, PAM), Min, 0}};
-parse([Day,Month,Year,Hour,$:,Min,$:,Sec | PAM], _Now, _Opts)
+parse([Day, Month, Year, Hour, $:, Min, $:, Sec | PAM], _Now, _Opts)
     when ?is_meridian(PAM) ->
     {{Year, Month, Day}, {hour(Hour, PAM), Min, Sec}};
 
@@ -363,62 +365,62 @@ tokenise([], Acc) ->
 
 tokenise([N1, N2, N3, N4, N5, N6 | Rest], Acc)
     when ?is_num(N1), ?is_num(N2), ?is_num(N3), ?is_num(N4), ?is_num(N5), ?is_num(N6) ->
-    tokenise(Rest, [ ltoi([N1, N2, N3, N4, N5, N6]) | Acc]);
+    tokenise(Rest, [ltoi([N1, N2, N3, N4, N5, N6]) | Acc]);
 tokenise([N1, N2, N3, N4, N5 | Rest], Acc)
     when ?is_num(N1), ?is_num(N2), ?is_num(N3), ?is_num(N4), ?is_num(N5) ->
-    tokenise(Rest, [ ltoi([N1, N2, N3, N4, N5]) | Acc]);
+    tokenise(Rest, [ltoi([N1, N2, N3, N4, N5]) | Acc]);
 tokenise([N1, N2, N3, N4 | Rest], Acc)
     when ?is_num(N1), ?is_num(N2), ?is_num(N3), ?is_num(N4) ->
-    tokenise(Rest, [ ltoi([N1, N2, N3, N4]) | Acc]);
+    tokenise(Rest, [ltoi([N1, N2, N3, N4]) | Acc]);
 tokenise([N1, N2, N3 | Rest], Acc)
     when ?is_num(N1), ?is_num(N2), ?is_num(N3) ->
-    tokenise(Rest, [ ltoi([N1, N2, N3]) | Acc]);
+    tokenise(Rest, [ltoi([N1, N2, N3]) | Acc]);
 tokenise([N1, N2 | Rest], Acc)
     when ?is_num(N1), ?is_num(N2) ->
-    tokenise(Rest, [ ltoi([N1, N2]) | Acc]);
+    tokenise(Rest, [ltoi([N1, N2]) | Acc]);
 tokenise([N1 | Rest], Acc)
     when ?is_num(N1) ->
-    tokenise(Rest, [ ltoi([N1]) | Acc]);
+    tokenise(Rest, [ltoi([N1]) | Acc]);
 
 
 %% Worded Months get tagged with ?MONTH_TAG to let the parser know that these
 %% are unambiguously declared to be months. This was there's no confusion
 %% between, for example: "Aug 12" and "12 Aug"
 %% These hint tags are filtered in filter_hints/1 above.
-tokenise("JANUARY"++Rest, Acc) -> tokenise(Rest, [{?MONTH_TAG,1} | Acc]);
-tokenise("JAN"++Rest, Acc) -> tokenise(Rest, [{?MONTH_TAG,1} | Acc]);
-tokenise("FEBRUARY"++Rest, Acc) -> tokenise(Rest, [{?MONTH_TAG,2} | Acc]);
-tokenise("FEB"++Rest, Acc) -> tokenise(Rest, [{?MONTH_TAG,2} | Acc]);
-tokenise("MARCH"++Rest, Acc) -> tokenise(Rest, [{?MONTH_TAG,3} | Acc]);
-tokenise("MAR"++Rest, Acc) -> tokenise(Rest, [{?MONTH_TAG,3} | Acc]);
-tokenise("APRIL"++Rest, Acc) -> tokenise(Rest, [{?MONTH_TAG,4} | Acc]);
-tokenise("APR"++Rest, Acc) -> tokenise(Rest, [{?MONTH_TAG,4} | Acc]);
-tokenise("MAY"++Rest, Acc) -> tokenise(Rest, [{?MONTH_TAG,5} | Acc]);
-tokenise("JUNE"++Rest, Acc) -> tokenise(Rest, [{?MONTH_TAG,6} | Acc]);
-tokenise("JUN"++Rest, Acc) -> tokenise(Rest, [{?MONTH_TAG,6} | Acc]);
-tokenise("JULY"++Rest, Acc) -> tokenise(Rest, [{?MONTH_TAG,7} | Acc]);
-tokenise("JUL"++Rest, Acc) -> tokenise(Rest, [{?MONTH_TAG,7} | Acc]);
-tokenise("AUGUST"++Rest, Acc) -> tokenise(Rest, [{?MONTH_TAG,8} | Acc]);
-tokenise("AUG"++Rest, Acc) -> tokenise(Rest, [{?MONTH_TAG,8} | Acc]);
-tokenise("SEPTEMBER"++Rest, Acc) -> tokenise(Rest, [{?MONTH_TAG,9} | Acc]);
-tokenise("SEPT"++Rest, Acc) -> tokenise(Rest, [{?MONTH_TAG,9} | Acc]);
-tokenise("SEP"++Rest, Acc) -> tokenise(Rest, [{?MONTH_TAG,9} | Acc]);
-tokenise("OCTOBER"++Rest, Acc) -> tokenise(Rest, [{?MONTH_TAG,10} | Acc]);
-tokenise("OCT"++Rest, Acc) -> tokenise(Rest, [{?MONTH_TAG,10} | Acc]);
-tokenise("NOVEMBER"++Rest, Acc) -> tokenise(Rest, [{?MONTH_TAG,11} | Acc]);
-tokenise("NOVEM"++Rest, Acc) -> tokenise(Rest, [{?MONTH_TAG,11} | Acc]);
-tokenise("NOV"++Rest, Acc) -> tokenise(Rest, [{?MONTH_TAG,11} | Acc]);
-tokenise("DECEMBER"++Rest, Acc) -> tokenise(Rest, [{?MONTH_TAG,12} | Acc]);
-tokenise("DECEM"++Rest, Acc) -> tokenise(Rest, [{?MONTH_TAG,12} | Acc]);
-tokenise("DEC"++Rest, Acc) -> tokenise(Rest, [{?MONTH_TAG,12} | Acc]);
+tokenise("JANUARY" ++ Rest, Acc) -> tokenise(Rest, [{?MONTH_TAG, 1} | Acc]);
+tokenise("JAN" ++ Rest, Acc) -> tokenise(Rest, [{?MONTH_TAG, 1} | Acc]);
+tokenise("FEBRUARY" ++ Rest, Acc) -> tokenise(Rest, [{?MONTH_TAG, 2} | Acc]);
+tokenise("FEB" ++ Rest, Acc) -> tokenise(Rest, [{?MONTH_TAG, 2} | Acc]);
+tokenise("MARCH" ++ Rest, Acc) -> tokenise(Rest, [{?MONTH_TAG, 3} | Acc]);
+tokenise("MAR" ++ Rest, Acc) -> tokenise(Rest, [{?MONTH_TAG, 3} | Acc]);
+tokenise("APRIL" ++ Rest, Acc) -> tokenise(Rest, [{?MONTH_TAG, 4} | Acc]);
+tokenise("APR" ++ Rest, Acc) -> tokenise(Rest, [{?MONTH_TAG, 4} | Acc]);
+tokenise("MAY" ++ Rest, Acc) -> tokenise(Rest, [{?MONTH_TAG, 5} | Acc]);
+tokenise("JUNE" ++ Rest, Acc) -> tokenise(Rest, [{?MONTH_TAG, 6} | Acc]);
+tokenise("JUN" ++ Rest, Acc) -> tokenise(Rest, [{?MONTH_TAG, 6} | Acc]);
+tokenise("JULY" ++ Rest, Acc) -> tokenise(Rest, [{?MONTH_TAG, 7} | Acc]);
+tokenise("JUL" ++ Rest, Acc) -> tokenise(Rest, [{?MONTH_TAG, 7} | Acc]);
+tokenise("AUGUST" ++ Rest, Acc) -> tokenise(Rest, [{?MONTH_TAG, 8} | Acc]);
+tokenise("AUG" ++ Rest, Acc) -> tokenise(Rest, [{?MONTH_TAG, 8} | Acc]);
+tokenise("SEPTEMBER" ++ Rest, Acc) -> tokenise(Rest, [{?MONTH_TAG, 9} | Acc]);
+tokenise("SEPT" ++ Rest, Acc) -> tokenise(Rest, [{?MONTH_TAG, 9} | Acc]);
+tokenise("SEP" ++ Rest, Acc) -> tokenise(Rest, [{?MONTH_TAG, 9} | Acc]);
+tokenise("OCTOBER" ++ Rest, Acc) -> tokenise(Rest, [{?MONTH_TAG, 10} | Acc]);
+tokenise("OCT" ++ Rest, Acc) -> tokenise(Rest, [{?MONTH_TAG, 10} | Acc]);
+tokenise("NOVEMBER" ++ Rest, Acc) -> tokenise(Rest, [{?MONTH_TAG, 11} | Acc]);
+tokenise("NOVEM" ++ Rest, Acc) -> tokenise(Rest, [{?MONTH_TAG, 11} | Acc]);
+tokenise("NOV" ++ Rest, Acc) -> tokenise(Rest, [{?MONTH_TAG, 11} | Acc]);
+tokenise("DECEMBER" ++ Rest, Acc) -> tokenise(Rest, [{?MONTH_TAG, 12} | Acc]);
+tokenise("DECEM" ++ Rest, Acc) -> tokenise(Rest, [{?MONTH_TAG, 12} | Acc]);
+tokenise("DEC" ++ Rest, Acc) -> tokenise(Rest, [{?MONTH_TAG, 12} | Acc]);
 
-tokenise([$: | Rest], Acc) -> tokenise(Rest, [ $: | Acc]);
-tokenise([$/ | Rest], Acc) -> tokenise(Rest, [ $/ | Acc]);
-tokenise([$- | Rest], Acc) -> tokenise(Rest, [ $- | Acc]);
-tokenise("AM"++Rest, Acc) -> tokenise(Rest, [am | Acc]);
-tokenise("PM"++Rest, Acc) -> tokenise(Rest, [pm | Acc]);
-tokenise("A"++Rest, Acc) -> tokenise(Rest, [am | Acc]);
-tokenise("P"++Rest, Acc) -> tokenise(Rest, [pm | Acc]);
+tokenise([$: | Rest], Acc) -> tokenise(Rest, [$: | Acc]);
+tokenise([$/ | Rest], Acc) -> tokenise(Rest, [$/ | Acc]);
+tokenise([$- | Rest], Acc) -> tokenise(Rest, [$- | Acc]);
+tokenise("AM" ++ Rest, Acc) -> tokenise(Rest, [am | Acc]);
+tokenise("PM" ++ Rest, Acc) -> tokenise(Rest, [pm | Acc]);
+tokenise("A" ++ Rest, Acc) -> tokenise(Rest, [am | Acc]);
+tokenise("P" ++ Rest, Acc) -> tokenise(Rest, [pm | Acc]);
 
 %% Postel's Law
 %%
@@ -428,40 +430,40 @@ tokenise("P"++Rest, Acc) -> tokenise(Rest, [pm | Acc]);
 %% See RFC 793 Section 2.10 http://tools.ietf.org/html/rfc793
 %%
 %% Mebbies folk want to include Saturday etc in a date, nae borra
-tokenise("MONDAY"++Rest, Acc) -> tokenise(Rest, Acc);
-tokenise("MON"++Rest, Acc) -> tokenise(Rest, Acc);
-tokenise("TUESDAY"++Rest, Acc) -> tokenise(Rest, Acc);
-tokenise("TUES"++Rest, Acc) -> tokenise(Rest, Acc);
-tokenise("TUE"++Rest, Acc) -> tokenise(Rest, Acc);
-tokenise("WEDNESDAY"++Rest, Acc) -> tokenise(Rest, Acc);
-tokenise("WEDS"++Rest, Acc) -> tokenise(Rest, Acc);
-tokenise("WED"++Rest, Acc) -> tokenise(Rest, Acc);
-tokenise("THURSDAY"++Rest, Acc) -> tokenise(Rest, Acc);
-tokenise("THURS"++Rest, Acc) -> tokenise(Rest, Acc);
-tokenise("THUR"++Rest, Acc) -> tokenise(Rest, Acc);
-tokenise("THU"++Rest, Acc) -> tokenise(Rest, Acc);
-tokenise("FRIDAY"++Rest, Acc) -> tokenise(Rest, Acc);
-tokenise("FRI"++Rest, Acc) -> tokenise(Rest, Acc);
-tokenise("SATURDAY"++Rest, Acc) -> tokenise(Rest, Acc);
-tokenise("SAT"++Rest, Acc) -> tokenise(Rest, Acc);
-tokenise("SUNDAY"++Rest, Acc) -> tokenise(Rest, Acc);
-tokenise("SUN"++Rest, Acc) -> tokenise(Rest, Acc);
+tokenise("MONDAY" ++ Rest, Acc) -> tokenise(Rest, Acc);
+tokenise("MON" ++ Rest, Acc) -> tokenise(Rest, Acc);
+tokenise("TUESDAY" ++ Rest, Acc) -> tokenise(Rest, Acc);
+tokenise("TUES" ++ Rest, Acc) -> tokenise(Rest, Acc);
+tokenise("TUE" ++ Rest, Acc) -> tokenise(Rest, Acc);
+tokenise("WEDNESDAY" ++ Rest, Acc) -> tokenise(Rest, Acc);
+tokenise("WEDS" ++ Rest, Acc) -> tokenise(Rest, Acc);
+tokenise("WED" ++ Rest, Acc) -> tokenise(Rest, Acc);
+tokenise("THURSDAY" ++ Rest, Acc) -> tokenise(Rest, Acc);
+tokenise("THURS" ++ Rest, Acc) -> tokenise(Rest, Acc);
+tokenise("THUR" ++ Rest, Acc) -> tokenise(Rest, Acc);
+tokenise("THU" ++ Rest, Acc) -> tokenise(Rest, Acc);
+tokenise("FRIDAY" ++ Rest, Acc) -> tokenise(Rest, Acc);
+tokenise("FRI" ++ Rest, Acc) -> tokenise(Rest, Acc);
+tokenise("SATURDAY" ++ Rest, Acc) -> tokenise(Rest, Acc);
+tokenise("SAT" ++ Rest, Acc) -> tokenise(Rest, Acc);
+tokenise("SUNDAY" ++ Rest, Acc) -> tokenise(Rest, Acc);
+tokenise("SUN" ++ Rest, Acc) -> tokenise(Rest, Acc);
 
 %% Hmm Excel reports GMT in times so nuke that too
-tokenise("GMT"++Rest, Acc) -> tokenise(Rest, Acc);
-tokenise("UTC"++Rest, Acc) -> tokenise(Rest, Acc);
-tokenise("DST"++Rest, Acc) -> tokenise(Rest, Acc); % daylight saving time
+tokenise("GMT" ++ Rest, Acc) -> tokenise(Rest, Acc);
+tokenise("UTC" ++ Rest, Acc) -> tokenise(Rest, Acc);
+tokenise("DST" ++ Rest, Acc) -> tokenise(Rest, Acc); % daylight saving time
 
 tokenise([$, | Rest], Acc) -> tokenise(Rest, Acc);
 tokenise([32 | Rest], Acc) -> tokenise(Rest, Acc); % Spaces
-tokenise("TH"++Rest, Acc) -> tokenise(Rest, Acc);
-tokenise("ND"++Rest, Acc) -> tokenise(Rest, Acc);
-tokenise("ST"++Rest, Acc) -> tokenise(Rest, Acc);
-tokenise("OF"++Rest, Acc) -> tokenise(Rest, Acc);
-tokenise("T"++Rest, Acc) -> tokenise(Rest, Acc);  % 2012-12-12T12:12:12 ISO formatting.
+tokenise("TH" ++ Rest, Acc) -> tokenise(Rest, Acc);
+tokenise("ND" ++ Rest, Acc) -> tokenise(Rest, Acc);
+tokenise("ST" ++ Rest, Acc) -> tokenise(Rest, Acc);
+tokenise("OF" ++ Rest, Acc) -> tokenise(Rest, Acc);
+tokenise("T" ++ Rest, Acc) -> tokenise(Rest, Acc);  % 2012-12-12T12:12:12 ISO formatting.
 tokenise([$Z | Rest], Acc) -> tokenise(Rest, [$Z | Acc]);  % 2012-12-12T12:12:12Zulu
-tokenise([$. |  Rest], Acc) -> tokenise(Rest, [$. | Acc]);  % 2012-12-12T12:12:12.xxxx ISO formatting.
-tokenise([$+| Rest], Acc) -> tokenise(Rest, [$+ | Acc]);  % 2012-12-12T12:12:12.xxxx+ ISO formatting.
+tokenise([$. | Rest], Acc) -> tokenise(Rest, [$. | Acc]);  % 2012-12-12T12:12:12.xxxx ISO formatting.
+tokenise([$+ | Rest], Acc) -> tokenise(Rest, [$+ | Acc]);  % 2012-12-12T12:12:12.xxxx+ ISO formatting.
 
 tokenise([Else | Rest], Acc) ->
     tokenise(Rest, [{bad_token, Else} | Acc]).
@@ -470,148 +472,148 @@ hour(Hour, []) -> Hour;
 hour(12, [am]) -> 0;
 hour(Hour, [am]) -> Hour;
 hour(12, [pm]) -> 12;
-hour(Hour, [pm]) -> Hour+12.
+hour(Hour, [pm]) -> Hour + 12.
 
--spec format(string(),datetime(),list()) -> string().
+-spec format(string(), datetime(), list()) -> string().
 %% Finished, return
 format([], _Date, Acc) ->
     lists:flatten(lists:reverse(Acc));
 
 %% Escape backslashes
-format([$\\,H|T], Dt, Acc) ->
-    format(T,Dt,[H|Acc]);
+format([$\\, H | T], Dt, Acc) ->
+    format(T, Dt, [H | Acc]);
 
 %% Year Formats
-format([$Y|T], {{Y,_,_},_}=Dt, Acc) ->
-    format(T, Dt, [itol(Y)|Acc]);
-format([$y|T], {{Y,_,_},_}=Dt, Acc) ->
+format([$Y | T], {{Y, _, _}, _} = Dt, Acc) ->
+    format(T, Dt, [itol(Y) | Acc]);
+format([$y | T], {{Y, _, _}, _} = Dt, Acc) ->
     [_, _, Y3, Y4] = itol(Y),
-    format(T, Dt, [[Y3,Y4]|Acc]);
-format([$L|T], {{Y,_,_},_}=Dt, Acc) ->
-    format(T, Dt, [itol(is_leap(Y))|Acc]);
-format([$o|T], {Date,_}=Dt, Acc) ->
-    format(T, Dt, [itol(iso_year(Date))|Acc]);
+    format(T, Dt, [[Y3, Y4] | Acc]);
+format([$L | T], {{Y, _, _}, _} = Dt, Acc) ->
+    format(T, Dt, [itol(is_leap(Y)) | Acc]);
+format([$o | T], {Date, _} = Dt, Acc) ->
+    format(T, Dt, [itol(iso_year(Date)) | Acc]);
 
 %% Month Formats
-format([$n|T], {{_,M,_},_}=Dt, Acc) ->
-    format(T, Dt, [itol(M)|Acc]);
-format([$m|T], {{_,M,_},_}=Dt, Acc) ->
-    format(T, Dt, [pad2(M)|Acc]);
-format([$M|T], {{_,M,_},_}=Dt, Acc) ->
-    format(T, Dt, [smonth(M)|Acc]);
-format([$F|T], {{_,M,_},_}=Dt, Acc) ->
-    format(T, Dt, [month(M)|Acc]);
-format([$t|T], {{Y,M,_},_}=Dt, Acc) ->
-    format(T, Dt, [itol(calendar:last_day_of_the_month(Y,M))|Acc]);
+format([$n | T], {{_, M, _}, _} = Dt, Acc) ->
+    format(T, Dt, [itol(M) | Acc]);
+format([$m | T], {{_, M, _}, _} = Dt, Acc) ->
+    format(T, Dt, [pad2(M) | Acc]);
+format([$M | T], {{_, M, _}, _} = Dt, Acc) ->
+    format(T, Dt, [smonth(M) | Acc]);
+format([$F | T], {{_, M, _}, _} = Dt, Acc) ->
+    format(T, Dt, [month(M) | Acc]);
+format([$t | T], {{Y, M, _}, _} = Dt, Acc) ->
+    format(T, Dt, [itol(calendar:last_day_of_the_month(Y, M)) | Acc]);
 
 %% Week Formats
-format([$W|T], {Date,_}=Dt, Acc) ->
-    format(T, Dt, [pad2(iso_week(Date))|Acc]);
+format([$W | T], {Date, _} = Dt, Acc) ->
+    format(T, Dt, [pad2(iso_week(Date)) | Acc]);
 
 %% Day Formats
-format([$j|T], {{_,_,D},_}=Dt, Acc) ->
-    format(T, Dt, [itol(D)|Acc]);
-format([$S|T], {{_,_,D},_}=Dt, Acc) ->
-    format(T, Dt,[suffix(D)| Acc]);
-format([$d|T], {{_,_,D},_}=Dt, Acc) ->
-    format(T, Dt, [pad2(D)|Acc]);
-format([$D|T], {Date,_}=Dt, Acc) ->
-    format(T, Dt, [sdayd(Date)|Acc]);
-format([$l|T], {Date,_}=Dt, Acc) ->
-    format(T, Dt, [day(calendar:day_of_the_week(Date))|Acc]);
-format([$N|T], {Date,_}=Dt, Acc) ->
-    format(T, Dt, [itol(calendar:day_of_the_week(Date))|Acc]);
-format([$w|T], {Date,_}=Dt, Acc) ->
-    format(T, Dt, [itol(to_w(calendar:day_of_the_week(Date)))|Acc]);
-format([$z|T], {Date,_}=Dt, Acc) ->
-    format(T, Dt, [itol(days_in_year(Date))|Acc]);
+format([$j | T], {{_, _, D}, _} = Dt, Acc) ->
+    format(T, Dt, [itol(D) | Acc]);
+format([$S | T], {{_, _, D}, _} = Dt, Acc) ->
+    format(T, Dt, [suffix(D) | Acc]);
+format([$d | T], {{_, _, D}, _} = Dt, Acc) ->
+    format(T, Dt, [pad2(D) | Acc]);
+format([$D | T], {Date, _} = Dt, Acc) ->
+    format(T, Dt, [sdayd(Date) | Acc]);
+format([$l | T], {Date, _} = Dt, Acc) ->
+    format(T, Dt, [day(calendar:day_of_the_week(Date)) | Acc]);
+format([$N | T], {Date, _} = Dt, Acc) ->
+    format(T, Dt, [itol(calendar:day_of_the_week(Date)) | Acc]);
+format([$w | T], {Date, _} = Dt, Acc) ->
+    format(T, Dt, [itol(to_w(calendar:day_of_the_week(Date))) | Acc]);
+format([$z | T], {Date, _} = Dt, Acc) ->
+    format(T, Dt, [itol(days_in_year(Date)) | Acc]);
 
 %% Time Formats
-format([$a|T], Dt={_,{H,_,_}}, Acc) when H >= 12 ->
-    format(T, Dt, ["pm"|Acc]);
-format([$a|T], Dt={_,{_,_,_}}, Acc) ->
-    format(T, Dt, ["am"|Acc]);
-format([$A|T], {_,{H,_,_}}=Dt, Acc) when H >= 12 ->
-    format(T, Dt, ["PM"|Acc]);
-format([$A|T], Dt={_,{_,_,_}}, Acc) ->
-    format(T, Dt, ["AM"|Acc]);
-format([$g|T], {_,{H,_,_}}=Dt, Acc) when H == 12; H == 0 ->
-    format(T, Dt, ["12"|Acc]);
-format([$g|T], {_,{H,_,_}}=Dt, Acc) when H > 12 ->
-    format(T, Dt, [itol(H-12)|Acc]);
-format([$g|T], {_,{H,_,_}}=Dt, Acc) ->
-    format(T, Dt, [itol(H)|Acc]);
-format([$G|T], {_,{H,_,_}}=Dt, Acc) ->
-    format(T, Dt, [itol(H)|Acc]);
-format([$h|T], {_,{H,_,_}}=Dt, Acc) when H > 12 ->
-    format(T, Dt, [pad2(H-12)|Acc]);
-format([$h|T], {_,{H,_,_}}=Dt, Acc) ->
-    format(T, Dt, [pad2(H)|Acc]);
-format([$H|T], {_,{H,_,_}}=Dt, Acc) ->
-    format(T, Dt, [pad2(H)|Acc]);
-format([$i|T], {_,{_,M,_}}=Dt, Acc) ->
-    format(T, Dt, [pad2(M)|Acc]);
-format([$s|T], {_,{_,_,S}}=Dt, Acc) ->
-    format(T, Dt, [pad2(S)|Acc]);
-format([$f|T], {_,{_,_,_}}=Dt, Acc) ->
-    format(T, Dt, [itol(0)|Acc]);
+format([$a | T], Dt = {_, {H, _, _}}, Acc) when H >= 12 ->
+    format(T, Dt, ["pm" | Acc]);
+format([$a | T], Dt = {_, {_, _, _}}, Acc) ->
+    format(T, Dt, ["am" | Acc]);
+format([$A | T], {_, {H, _, _}} = Dt, Acc) when H >= 12 ->
+    format(T, Dt, ["PM" | Acc]);
+format([$A | T], Dt = {_, {_, _, _}}, Acc) ->
+    format(T, Dt, ["AM" | Acc]);
+format([$g | T], {_, {H, _, _}} = Dt, Acc) when H == 12; H == 0 ->
+    format(T, Dt, ["12" | Acc]);
+format([$g | T], {_, {H, _, _}} = Dt, Acc) when H > 12 ->
+    format(T, Dt, [itol(H - 12) | Acc]);
+format([$g | T], {_, {H, _, _}} = Dt, Acc) ->
+    format(T, Dt, [itol(H) | Acc]);
+format([$G | T], {_, {H, _, _}} = Dt, Acc) ->
+    format(T, Dt, [itol(H) | Acc]);
+format([$h | T], {_, {H, _, _}} = Dt, Acc) when H > 12 ->
+    format(T, Dt, [pad2(H - 12) | Acc]);
+format([$h | T], {_, {H, _, _}} = Dt, Acc) ->
+    format(T, Dt, [pad2(H) | Acc]);
+format([$H | T], {_, {H, _, _}} = Dt, Acc) ->
+    format(T, Dt, [pad2(H) | Acc]);
+format([$i | T], {_, {_, M, _}} = Dt, Acc) ->
+    format(T, Dt, [pad2(M) | Acc]);
+format([$s | T], {_, {_, _, S}} = Dt, Acc) ->
+    format(T, Dt, [pad2(S) | Acc]);
+format([$f | T], {_, {_, _, _}} = Dt, Acc) ->
+    format(T, Dt, [itol(0) | Acc]);
 
 %% Time Formats ms
-format([$a|T], Dt={_,{H,_,_,_}}, Acc) when H > 12 ->
-    format(T, Dt, ["pm"|Acc]);
-format([$a|T], Dt={_,{_,_,_,_}}, Acc) ->
-    format(T, Dt, ["am"|Acc]);
-format([$A|T], {_,{H,_,_,_}}=Dt, Acc) when H > 12 ->
-    format(T, Dt, ["PM"|Acc]);
-format([$A|T], Dt={_,{_,_,_,_}}, Acc) ->
-    format(T, Dt, ["AM"|Acc]);
-format([$g|T], {_,{H,_,_,_}}=Dt, Acc) when H == 12; H == 0 ->
-    format(T, Dt, ["12"|Acc]);
-format([$g|T], {_,{H,_,_,_}}=Dt, Acc) when H > 12 ->
-    format(T, Dt, [itol(H-12)|Acc]);
-format([$g|T], {_,{H,_,_,_}}=Dt, Acc) ->
-    format(T, Dt, [itol(H)|Acc]);
-format([$G|T], {_,{H,_,_,_}}=Dt, Acc) ->
-    format(T, Dt, [itol(H)|Acc]);
-format([$h|T], {_,{H,_,_,_}}=Dt, Acc) when H > 12 ->
-    format(T, Dt, [pad2(H-12)|Acc]);
-format([$h|T], {_,{H,_,_,_}}=Dt, Acc) ->
-    format(T, Dt, [pad2(H)|Acc]);
-format([$H|T], {_,{H,_,_,_}}=Dt, Acc) ->
-    format(T, Dt, [pad2(H)|Acc]);
-format([$i|T], {_,{_,M,_,_}}=Dt, Acc) ->
-    format(T, Dt, [pad2(M)|Acc]);
-format([$s|T], {_,{_,_,S,_}}=Dt, Acc) ->
-    format(T, Dt, [pad2(S)|Acc]);
-format([$f|T], {_,{_,_,_,Ms}}=Dt, Acc) ->
-    format(T, Dt, [itol(Ms)|Acc]);
+format([$a | T], Dt = {_, {H, _, _, _}}, Acc) when H > 12 ->
+    format(T, Dt, ["pm" | Acc]);
+format([$a | T], Dt = {_, {_, _, _, _}}, Acc) ->
+    format(T, Dt, ["am" | Acc]);
+format([$A | T], {_, {H, _, _, _}} = Dt, Acc) when H > 12 ->
+    format(T, Dt, ["PM" | Acc]);
+format([$A | T], Dt = {_, {_, _, _, _}}, Acc) ->
+    format(T, Dt, ["AM" | Acc]);
+format([$g | T], {_, {H, _, _, _}} = Dt, Acc) when H == 12; H == 0 ->
+    format(T, Dt, ["12" | Acc]);
+format([$g | T], {_, {H, _, _, _}} = Dt, Acc) when H > 12 ->
+    format(T, Dt, [itol(H - 12) | Acc]);
+format([$g | T], {_, {H, _, _, _}} = Dt, Acc) ->
+    format(T, Dt, [itol(H) | Acc]);
+format([$G | T], {_, {H, _, _, _}} = Dt, Acc) ->
+    format(T, Dt, [itol(H) | Acc]);
+format([$h | T], {_, {H, _, _, _}} = Dt, Acc) when H > 12 ->
+    format(T, Dt, [pad2(H - 12) | Acc]);
+format([$h | T], {_, {H, _, _, _}} = Dt, Acc) ->
+    format(T, Dt, [pad2(H) | Acc]);
+format([$H | T], {_, {H, _, _, _}} = Dt, Acc) ->
+    format(T, Dt, [pad2(H) | Acc]);
+format([$i | T], {_, {_, M, _, _}} = Dt, Acc) ->
+    format(T, Dt, [pad2(M) | Acc]);
+format([$s | T], {_, {_, _, S, _}} = Dt, Acc) ->
+    format(T, Dt, [pad2(S) | Acc]);
+format([$f | T], {_, {_, _, _, Ms}} = Dt, Acc) ->
+    format(T, Dt, [itol(Ms) | Acc]);
 
 %% Whole Dates
-format([$c|T], {{Y,M,D},{H,Min,S}}=Dt, Acc) ->
+format([$c | T], {{Y, M, D}, {H, Min, S}} = Dt, Acc) ->
     Format = "~4.10.0B-~2.10.0B-~2.10.0B"
-        ++" ~2.10.0B:~2.10.0B:~2.10.0B",
+        ++ " ~2.10.0B:~2.10.0B:~2.10.0B",
     Date = io_lib:format(Format, [Y, M, D, H, Min, S]),
-    format(T, Dt, [Date|Acc]);
-format([$r|T], {{Y,M,D},{H,Min,S}}=Dt, Acc) ->
+    format(T, Dt, [Date | Acc]);
+format([$r | T], {{Y, M, D}, {H, Min, S}} = Dt, Acc) ->
     Format = "~s, ~p ~s ~p ~2.10.0B:~2.10.0B:~2.10.0B",
-    Args = [sdayd({Y,M,D}), D, smonth(M), Y, H, Min, S],
-    format(T, Dt, [io_lib:format(Format, Args)|Acc]);
-format([$U|T], Dt, Acc) ->
-    Epoch = {{1970,1,1},{0,0,0}},
+    Args = [sdayd({Y, M, D}), D, smonth(M), Y, H, Min, S],
+    format(T, Dt, [io_lib:format(Format, Args) | Acc]);
+format([$U | T], Dt, Acc) ->
+    Epoch = {{1970, 1, 1}, {0, 0, 0}},
     Time = calendar:datetime_to_gregorian_seconds(Dt) -
         calendar:datetime_to_gregorian_seconds(Epoch),
-    format(T, Dt, [itol(Time)|Acc]);
+    format(T, Dt, [itol(Time) | Acc]);
 
 %% Unrecognised, print as is
-format([H|T], Date, Acc) ->
-    format(T, Date, [H|Acc]).
+format([H | T], Date, Acc) ->
+    format(T, Date, [H | Acc]).
 
 
 %% @doc days in year
 -spec days_in_year(date()) -> integer().
-days_in_year({Y,_,_}=Date) ->
+days_in_year({Y, _, _} = Date) ->
     calendar:date_to_gregorian_days(Date) -
-        calendar:date_to_gregorian_days({Y,1,1}).
+        calendar:date_to_gregorian_days({Y, 1, 1}).
 
 %% @doc is a leap year
 -spec is_leap(year()) -> 1|0.
@@ -640,16 +642,16 @@ iso_week(Date) ->
 -spec iso_year(date()) -> integer().
 %% @doc The year number as defined in ISO 8601
 %% http://en.wikipedia.org/wiki/ISO_week_date
-iso_year({Y, _M, _D}=Dt) ->
+iso_year({Y, _M, _D} = Dt) ->
     case Dt >= {Y, 12, 29} of
         true ->
-            case Dt < iso_week_one(Y+1) of
+            case Dt < iso_week_one(Y + 1) of
                 true -> Y;
-                false -> Y+1
+                false -> Y + 1
             end;
         false ->
             case Dt < iso_week_one(Y) of
-                true -> Y-1;
+                true -> Y - 1;
                 false -> Y
             end
     end.
@@ -658,8 +660,8 @@ iso_year({Y, _M, _D}=Dt) ->
 %% @doc The date of the the first day of the first week
 %% in the ISO calendar
 iso_week_one(Y) ->
-    Day1 = calendar:day_of_the_week({Y,1,4}),
-    Days = calendar:date_to_gregorian_days({Y,1,4}) + (1-Day1),
+    Day1 = calendar:day_of_the_week({Y, 1, 4}),
+    Days = calendar:date_to_gregorian_days({Y, 1, 4}) + (1 - Day1),
     calendar:gregorian_days_to_date(Days).
 
 -spec itol(integer()) -> list().
@@ -670,9 +672,9 @@ itol(X) ->
 -spec pad2(integer()) -> list().
 %% @doc int padded with 0 to make sure its 2 chars
 pad2(X) when is_integer(X) ->
-    io_lib:format("~2.10.0B",[X]);
+    io_lib:format("~2.10.0B", [X]);
 pad2(X) when is_float(X) ->
-    io_lib:format("~2.10.0B",[trunc(X)]).
+    io_lib:format("~2.10.0B", [trunc(X)]).
 
 ltoi(X) ->
     list_to_integer(X).

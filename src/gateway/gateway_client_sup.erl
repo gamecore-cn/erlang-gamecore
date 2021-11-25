@@ -4,9 +4,9 @@
 %%% @doc
 %%%
 %%% @end
-%%% Created : 19. 11月 2021 12:14
+%%% Created : 24. 11月 2021 10:27
 %%%-------------------------------------------------------------------
--module(game_srv_role).
+-module(gateway_client_sup).
 -author("xiayiping").
 
 -behaviour(gen_server).
@@ -20,7 +20,7 @@
 
 -define(SERVER, ?MODULE).
 
--record(game_srv_role_state, {}).
+-record(gateway_client_sup_state, {}).
 
 %%%===================================================================
 %%% API
@@ -39,40 +39,40 @@ start_link() ->
 %% @private
 %% @doc Initializes the server
 -spec(init(Args :: term()) ->
-    {ok, State :: #game_srv_role_state{}} | {ok, State :: #game_srv_role_state{}, timeout() | hibernate} |
+    {ok, State :: #gateway_client_sup_state{}} | {ok, State :: #gateway_client_sup_state{}, timeout() | hibernate} |
     {stop, Reason :: term()} | ignore).
 init([]) ->
-    {ok, #game_srv_role_state{}}.
+    {ok, #gateway_client_sup_state{}}.
 
 %% @private
 %% @doc Handling call messages
 -spec(handle_call(Request :: term(), From :: {pid(), Tag :: term()},
-    State :: #game_srv_role_state{}) ->
-    {reply, Reply :: term(), NewState :: #game_srv_role_state{}} |
-    {reply, Reply :: term(), NewState :: #game_srv_role_state{}, timeout() | hibernate} |
-    {noreply, NewState :: #game_srv_role_state{}} |
-    {noreply, NewState :: #game_srv_role_state{}, timeout() | hibernate} |
-    {stop, Reason :: term(), Reply :: term(), NewState :: #game_srv_role_state{}} |
-    {stop, Reason :: term(), NewState :: #game_srv_role_state{}}).
-handle_call(_Request, _From, State = #game_srv_role_state{}) ->
+    State :: #gateway_client_sup_state{}) ->
+    {reply, Reply :: term(), NewState :: #gateway_client_sup_state{}} |
+    {reply, Reply :: term(), NewState :: #gateway_client_sup_state{}, timeout() | hibernate} |
+    {noreply, NewState :: #gateway_client_sup_state{}} |
+    {noreply, NewState :: #gateway_client_sup_state{}, timeout() | hibernate} |
+    {stop, Reason :: term(), Reply :: term(), NewState :: #gateway_client_sup_state{}} |
+    {stop, Reason :: term(), NewState :: #gateway_client_sup_state{}}).
+handle_call(_Request, _From, State = #gateway_client_sup_state{}) ->
     {reply, ok, State}.
 
 %% @private
 %% @doc Handling cast messages
--spec(handle_cast(Request :: term(), State :: #game_srv_role_state{}) ->
-    {noreply, NewState :: #game_srv_role_state{}} |
-    {noreply, NewState :: #game_srv_role_state{}, timeout() | hibernate} |
-    {stop, Reason :: term(), NewState :: #game_srv_role_state{}}).
-handle_cast(_Request, State = #game_srv_role_state{}) ->
+-spec(handle_cast(Request :: term(), State :: #gateway_client_sup_state{}) ->
+    {noreply, NewState :: #gateway_client_sup_state{}} |
+    {noreply, NewState :: #gateway_client_sup_state{}, timeout() | hibernate} |
+    {stop, Reason :: term(), NewState :: #gateway_client_sup_state{}}).
+handle_cast(_Request, State = #gateway_client_sup_state{}) ->
     {noreply, State}.
 
 %% @private
 %% @doc Handling all non call/cast messages
--spec(handle_info(Info :: timeout() | term(), State :: #game_srv_role_state{}) ->
-    {noreply, NewState :: #game_srv_role_state{}} |
-    {noreply, NewState :: #game_srv_role_state{}, timeout() | hibernate} |
-    {stop, Reason :: term(), NewState :: #game_srv_role_state{}}).
-handle_info(_Info, State = #game_srv_role_state{}) ->
+-spec(handle_info(Info :: timeout() | term(), State :: #gateway_client_sup_state{}) ->
+    {noreply, NewState :: #gateway_client_sup_state{}} |
+    {noreply, NewState :: #gateway_client_sup_state{}, timeout() | hibernate} |
+    {stop, Reason :: term(), NewState :: #gateway_client_sup_state{}}).
+handle_info(_Info, State = #gateway_client_sup_state{}) ->
     {noreply, State}.
 
 %% @private
@@ -81,16 +81,16 @@ handle_info(_Info, State = #game_srv_role_state{}) ->
 %% necessary cleaning up. When it returns, the gen_server terminates
 %% with Reason. The return value is ignored.
 -spec(terminate(Reason :: (normal | shutdown | {shutdown, term()} | term()),
-    State :: #game_srv_role_state{}) -> term()).
-terminate(_Reason, _State = #game_srv_role_state{}) ->
+    State :: #gateway_client_sup_state{}) -> term()).
+terminate(_Reason, _State = #gateway_client_sup_state{}) ->
     ok.
 
 %% @private
 %% @doc Convert process state when code is changed
--spec(code_change(OldVsn :: term() | {down, term()}, State :: #game_srv_role_state{},
+-spec(code_change(OldVsn :: term() | {down, term()}, State :: #gateway_client_sup_state{},
     Extra :: term()) ->
-    {ok, NewState :: #game_srv_role_state{}} | {error, Reason :: term()}).
-code_change(_OldVsn, State = #game_srv_role_state{}, _Extra) ->
+    {ok, NewState :: #gateway_client_sup_state{}} | {error, Reason :: term()}).
+code_change(_OldVsn, State = #gateway_client_sup_state{}, _Extra) ->
     {ok, State}.
 
 %%%===================================================================

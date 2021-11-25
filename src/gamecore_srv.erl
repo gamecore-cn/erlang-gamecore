@@ -4,9 +4,9 @@
 %%% @doc
 %%%
 %%% @end
-%%% Created : 19. 11月 2021 18:39
+%%% Created : 25. 11月 2021 8:52
 %%%-------------------------------------------------------------------
--module(activity_srv).
+-module(gamecore_srv).
 -author("xiayiping").
 -include("common.hrl").
 -include("srv.hrl").

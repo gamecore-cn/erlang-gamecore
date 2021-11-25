@@ -8,6 +8,7 @@
 %%%-------------------------------------------------------------------
 -module(gamecore_sup).
 -author("xiayiping").
+-include("common.hrl").
 
 -behaviour(supervisor).
 
@@ -24,9 +25,9 @@
 %%%===================================================================
 
 %% @doc Starts the supervisor
--spec(start_link() -> {ok, Pid :: pid()} | ignore | {error, Reason :: term()}).
+-spec(start_link() -> {?ok, Pid :: pid()} | ?ignore | {?error, Reason :: term()}).
 start_link() ->
-    supervisor:start_link({local, ?SERVER}, ?MODULE, []).
+    supervisor:start_link({?local, ?SERVER}, ?MODULE, []).
 
 %%%===================================================================
 %%% Supervisor callbacks
@@ -38,10 +39,10 @@ start_link() ->
 %% restart strategy, maximum restart frequency and child
 %% specifications.
 -spec(init(Args :: term()) ->
-    {ok, {SupFlags :: {RestartStrategy :: supervisor:strategy(),
+    {?ok, {SupFlags :: {RestartStrategy :: supervisor:strategy(),
         MaxR :: non_neg_integer(), MaxT :: non_neg_integer()},
         [ChildSpec :: supervisor:child_spec()]}}
-    | ignore | {error, Reason :: term()}).
+    | ?ignore | {?error, Reason :: term()}).
 init([]) ->
     MaxRestarts = 1000,
     MaxSecondsBetweenRestarts = 3600,

@@ -42,7 +42,7 @@ remove_accents(S0) ->
 %% @doc
 %% @end
 join([First | Rest], JoinWith) ->
-    lists:flatten([First] ++ [JoinWith ++ eutils:to_list(X) || X <- Rest, eutils:to_list(X) =/= ""]).
+    lists:flatten([First] ++ [JoinWith ++ eutil:to_list(X) || X <- Rest, eutil:to_list(X) =/= ""]).
 
 %% @doc
 %% Split sthe given string at the first Token found
@@ -190,13 +190,13 @@ quote(Str) ->
 %% @end
 random(Size) ->
     random(
-        lists:flatten([X || X <- eutils:to_string(base64:encode(crypto:strong_rand_bytes(Size))), is_alphanum(X)]),
+        lists:flatten([X || X <- eutil:to_string(base64:encode(crypto:strong_rand_bytes(Size))), is_alphanum(X)]),
         Size).
 random(Str, Size) when length(Str) >= Size ->
     string:left(Str, Size);
 random(Str, Size) ->
     random(
-        lists:flatten(Str ++ [X || X <- eutils:to_string(base64:encode(crypto:strong_rand_bytes(Size - length(Str)))), is_alphanum(X)]),
+        lists:flatten(Str ++ [X || X <- eutil:to_string(base64:encode(crypto:strong_rand_bytes(Size - length(Str)))), is_alphanum(X)]),
         Size).
 
 %% @doc

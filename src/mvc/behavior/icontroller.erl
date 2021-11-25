@@ -9,7 +9,7 @@
 -module(icontroller).
 -author("xiayiping").
 -include("common.hrl").
--include("mvc.hrl").
+
 
 %% callback
 %%------------------------------------------------------------------

@@ -15,8 +15,8 @@
 %%% define 常用常量
 %%% -------------------------------------------------------------------
 % 常用常量
--define(DATA_VALUE, 1).     % 值
--define(DATA_PERCENT, 2).   % 百分比
+-define(DATA_TYPE_VALUE, 1).       % 值
+-define(DATA_TYPE_PERCENT, 2).     % 百分比
 
 -define(UINT_32_MAX, 16#FFFFFFFF). % 无符号int32最大值
 -define(INT_32_MAX, 16#7FFFFFFF).  % 有符号int32最大值
@@ -47,55 +47,30 @@
 -define(exit, exit).             % exit
 -define(trap_exit, trap_exit).   % trap_exit
 -define(inet_reply, inet_reply). % inet_reply
--define(func, func).             % func
+% -define(func, f).              % func  转到 srv.hrl
 -define(add, add).               % add
 -define(del, del).               % del
+-define(local, local).           % local
+-define(timeout, timeout).       % timeout
 -define(update, update).         % update
 -define(not_found, not_found).   % not_found
 -define(no_data, no_data).       % no_data
--define(noreturn, noreturn).     % noreturn
--define(local, local).           % local
-
-
-
-%% 封装处理try ... catch
--define(TRY_SRV(FunCode, Mod, DoArgs, State),
-    try
-        case (FunCode) of
-            ?ok -> {?noreply, {Mod, State}};
-            {?ok, NewState} -> {?noreply, {Mod, NewState}};
-            {?noreply, NewState} -> {?noreply, {Mod, NewState}};
-            {?ok, Reply, NewState} -> {?reply, Reply, {Mod, NewState}};
-            {?reply, Reply, NewState} -> {?reply, Reply, {Mod, NewState}};
-            {?stop, Reason, NewState} -> {?stop, Reason, {Mod, NewState}};
-            {?stop, Reason, Reply, NewState} -> {?stop, Reason, Reply, {Mod, NewState}};
-            TryError ->
-                ?ERROR("Mod:~w DoArgs:~w TryError:~w State:~w", [Mod, DoArgs, TryError, State]),
-                {?noreply, {Mod, State}}
-        end
-    catch
-        Class:TryError2 ->
-            ?ERROR("Mod:~w DoArgs:~w Class:~w TryError:~w State:~w", [Mod, DoArgs, Class, TryError2, State])
-    end).
-
-
-
+-define(no_return, no_return).   % noreturn
 
 
 %% 异常
--define(TRY(CODE),
+-define(TRY(TryCode,DefaultValue),
     try
-        CODE
+        TryCode
     catch _CodeTryClass:_CodeTryError:_CodeTryStacktrace ->
         ?ERROR("
 Class:~w
 Error:~w
 Stack:~p", [_CodeTryClass, _CodeTryError, _CodeTryStacktrace]),
-        ?ok
+        DefaultValue
     end).
 
--define(TRY(Fun, DefaultReturn), ?TRY(Fun, [], DefaultReturn)).
--define(TRY(Fun, Args, DefaultReturn),
+-define(TRY(Fun, Args, DefaultValue),
     try
         erlang:apply(Fun, Args)
     catch _FunTryClass:_FunTryError:_FunTryStacktrace ->
@@ -103,7 +78,7 @@ Stack:~p", [_CodeTryClass, _CodeTryError, _CodeTryStacktrace]),
 Class:~w
 Error:~w
 Stack:~p", [_FunTryClass, _FunTryError, _FunTryStacktrace]),
-        DefaultReturn
+        DefaultValue
     end).
 
 -define(TRY_GATEWAY(Fun, Args, ErrorFun, ErrorFunArgs),

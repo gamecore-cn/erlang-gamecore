@@ -36,7 +36,9 @@
 -define(SECOND_MINUTES_MS(N), trunc(?SECOND_MINUTES_MS * (N))).
 -define(SECOND_MS(N), trunc(?SECOND_MS * (N))).
 
--define(SECOND_YEAR_THREE, 31536000).           % 按照365天计算的三年秒数
+-define(SECOND_DIFF_SECONDS_0000_1900, 62167219200).   % 0000到1970年的秒数  0时区
+-define(SECOND_EIGHT_ZONE_TIME_LINE, 62167248000).     % 0000到1970年的秒数  东8区
+-define(SECOND_YEAR_THREE, 31536000).                  % 按照365天计算的三年秒数
 
 -define(TIME_TYPE_WEEK, 4).   % 周
 -define(TIME_TYPE_DAY, 3).    % 天

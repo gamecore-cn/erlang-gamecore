@@ -4,16 +4,12 @@
 %%% @doc
 %%%
 %%% @end
-%%% Created : 09. 11月 2021 12:09
+%%% Created : 24. 11月 2021 10:03
 %%%-------------------------------------------------------------------
--module(icommand).
+-module(gateway_test).
 -author("xiayiping").
--include("common.hrl").
--include("srv.hrl").
 
+-include_lib("eunit/include/eunit.hrl").
 
-%% callback
-%%------------------------------------------------------------------
-%% @doc
--callback execute(Notification :: #n{}) ->
-    ?ok.
+simple_test() ->
+    ?assert(true).

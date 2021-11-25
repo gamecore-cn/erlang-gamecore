@@ -4,16 +4,12 @@
 %%% @doc
 %%%
 %%% @end
-%%% Created : 09. 11月 2021 12:09
+%%% Created : 23. 11月 2021 17:27
 %%%-------------------------------------------------------------------
--module(icommand).
+-module(map_test).
 -author("xiayiping").
--include("common.hrl").
--include("srv.hrl").
 
+-include_lib("eunit/include/eunit.hrl").
 
-%% callback
-%%------------------------------------------------------------------
-%% @doc
--callback execute(Notification :: #n{}) ->
-    ?ok.
+simple_test() ->
+    ?assert(true).

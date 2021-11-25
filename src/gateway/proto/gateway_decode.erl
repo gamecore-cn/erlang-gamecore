@@ -4,16 +4,10 @@
 %%% @doc
 %%%
 %%% @end
-%%% Created : 09. 11月 2021 12:09
+%%% Created : 24. 11月 2021 10:29
 %%%-------------------------------------------------------------------
--module(icommand).
+-module(gateway_decode).
 -author("xiayiping").
--include("common.hrl").
--include("srv.hrl").
 
-
-%% callback
-%%------------------------------------------------------------------
-%% @doc
--callback execute(Notification :: #n{}) ->
-    ?ok.
+%% API
+-export([]).
